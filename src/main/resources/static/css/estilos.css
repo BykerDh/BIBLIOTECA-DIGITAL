@@ -1,0 +1,13 @@
+body {
+    background-color: #f4f6f8;
+}
+
+.hero {
+    background: linear-gradient(135deg, #ffffff, #e8f0ff);
+    border: 1px solid #dbe4f0;
+}
+
+.card {
+    border: 1px solid #dbe4f0;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
