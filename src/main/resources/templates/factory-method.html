@@ -2,48 +2,87 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Factory Method</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factory Method | Biblioteca Digital</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/estilos.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" href="/css/estilos.css">
 </head>
 <body>
-    <main class="container py-5">
-        <a href="/app" class="btn btn-outline-secondary mb-4">Volver</a>
 
-        <div class="card p-4">
-            <h1>Patrón Factory Method</h1>
-            <p>
-                Selecciona un formato de libro digital. El sistema creará automáticamente
-                el lector correcto según el formato elegido.
-            </p>
+<nav class="navbar biblioteca-navbar">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/app}" href="/app">
+            <i class="bi bi-journal-bookmark-fill me-2"></i>
+            Biblioteca Digital
+        </a>
+        <a class="navbar-link" th:href="@{/app}" href="/app">
+            <i class="bi bi-house-door me-1"></i> Inicio
+        </a>
+    </div>
+</nav>
 
-            <form method="post" action="/app/factory" class="mt-3">
-                <div class="mb-3">
-                    <label class="form-label">Título del libro</label>
-                    <input type="text" name="titulo" class="form-control"
-                           placeholder="Ejemplo: Patrones de Software"
-                           th:value="${titulo}" required>
+<main class="container page-shell">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <a th:href="@{/app}" href="/app" class="btn btn-outline-secondary mb-4">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+
+            <div class="app-card">
+                <h1 class="h3 mb-2">
+                    <i class="bi bi-file-earmark-text me-2"></i>Patrón Factory Method
+                </h1>
+                <p class="text-secondary mb-4">
+                    Selecciona un formato de libro digital. El sistema creará automáticamente
+                    el lector correcto según el formato elegido.
+                </p>
+
+                <form method="post" th:action="@{/app/factory}" action="/app/factory">
+
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label fw-semibold">Título del libro</label>
+                        <input type="text" id="titulo" name="titulo" class="form-control"
+                               placeholder="Ejemplo: Patrones de Software"
+                               th:value="${titulo}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="formato" class="form-label fw-semibold">Formato</label>
+                        <select id="formato" name="formato" class="form-select" required>
+                            <option th:each="formatoItem : ${formatos}"
+                                    th:value="${formatoItem}"
+                                    th:text="${formatoItem}"
+                                    th:selected="${formatoItem == formatoSeleccionado}">Formato Ejemplo</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-library w-100 justify-content-center mt-2">
+                        <i class="bi bi-book-half"></i> Abrir libro
+                    </button>
+                </form>
+
+                <div class="result-panel mt-4 d-flex align-items-center" th:if="${resultado != null}">
+                    <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+                    <div>
+                        <strong>Resultado de la Fábrica: </strong>
+                        <span th:text="${resultado}">Lector creado con éxito</span>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Formato</label>
-                    <select name="formato" class="form-select" required>
-                        <option th:each="formato : ${formatos}"
-                                th:value="${formato}"
-                                th:text="${formato}"
-                                th:selected="${formato == formatoSeleccionado}">
-                        </option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Abrir libro</button>
-            </form>
-
-            <div class="alert alert-success mt-4" th:if="${resultado}">
-                <strong>Resultado:</strong>
-                <span th:text="${resultado}"></span>
             </div>
         </div>
-    </main>
+    </div>
+</main>
+
+<footer class="footer-app">
+    <div class="container">
+        Sistema de Biblioteca Digital - Patrones de Software
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
