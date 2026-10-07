@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Colecciones | Biblioteca Digital</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+</head>
+<body>
+  <header th:replace="~{fragments :: nav}"></header>
+  <main class="shell page">
+    <div class="page-title"><div><h1>Colecciones</h1><p>Explora libros organizados por tema.</p></div>
+      <a th:if="${usuario.rol == 'ADMIN'}" class="btn secondary" th:href="@{/admin/colecciones}">Administrar</a>
+    </div>
+    <div class="panel">
+      <ul class="tree" th:if="${!#lists.isEmpty(colecciones)}">
+        <th:block th:each="nodo : ${colecciones}">
+          <li th:replace="~{coleccion-rama :: rama(${nodo})}"></li>
+        </th:block>
+      </ul>
+      <p class="empty" th:if="${#lists.isEmpty(colecciones)}">Aun no hay colecciones.</p>
+    </div>
+  </main>
+  <footer th:replace="~{fragments :: pie}"></footer>
+</body>
+</html>

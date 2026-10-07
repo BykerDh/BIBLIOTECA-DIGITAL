@@ -1,103 +1,38 @@
 package com.biblioteca.patterns.creational.builder;
 
-public class FichaLibro {
+import com.biblioteca.domain.Models.Libro;
 
-    private final String titulo;
-    private final String autor;
-    private final String formato;
-    private final String categoria;
-    private final String editorial;
-    private final String isbn;
-    private final Integer paginas;
-
-    private FichaLibro(Builder builder) {
-        this.titulo = builder.titulo;
-        this.autor = builder.autor;
-        this.formato = builder.formato;
-        this.categoria = builder.categoria;
-        this.editorial = builder.editorial;
-        this.isbn = builder.isbn;
-        this.paginas = builder.paginas;
-    }
-
-    public String getResumen() {
-        return "Titulo: " + titulo
-                + " | Autor: " + autor
-                + " | Formato: " + formato
-                + " | Categoria: " + categoria
-                + " | Paginas: " + paginas;
-    }
-
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public String getAutor() {
-        return autor;
-    }
-
-    public String getFormato() {
-        return formato;
-    }
-
-    public String getCategoria() {
-        return categoria;
-    }
-
-    public String getEditorial() {
-        return editorial;
-    }
-
-    public String getIsbn() {
-        return isbn;
-    }
-
-    public Integer getPaginas() {
-        return paginas;
-    }
+// Builder concentra las validaciones y opciones de una ficha de libro.
+public final class FichaLibro {
+    private FichaLibro() {}
 
     public static class Builder {
-
         private final String titulo;
         private final String autor;
-        private String formato = "PDF";
-        private String categoria = "General";
-        private String editorial = "No especificada";
-        private String isbn = "No especificado";
-        private Integer paginas = 0;
+        private String genero = "General";
+        private String idioma = "es";
+        private String descripcion = "";
+        private String isbn;
+        private String editorial;
+        private Integer paginas;
+        private String accesoMinimo = "BASICO";
+        private int licencias = 1;
 
-        public Builder(String titulo, String autor) {
-            this.titulo = titulo;
-            this.autor = autor;
-        }
-
-        public Builder conFormato(String formato) {
-            this.formato = formato;
-            return this;
-        }
-
-        public Builder conCategoria(String categoria) {
-            this.categoria = categoria;
-            return this;
-        }
-
-        public Builder conEditorial(String editorial) {
-            this.editorial = editorial;
-            return this;
-        }
-
-        public Builder conIsbn(String isbn) {
-            this.isbn = isbn;
-            return this;
-        }
-
-        public Builder conPaginas(Integer paginas) {
-            this.paginas = paginas;
-            return this;
-        }
-
-        public FichaLibro construir() {
-            return new FichaLibro(this);
+        public Builder(String titulo,String autor) { this.titulo=titulo; this.autor=autor; }
+        public Builder conGenero(String v) { genero=v; return this; }
+        public Builder conIdioma(String v) { idioma=v; return this; }
+        public Builder conDescripcion(String v) { descripcion=v; return this; }
+        public Builder conIsbn(String v) { isbn=v; return this; }
+        public Builder conEditorial(String v) { editorial=v; return this; }
+        public Builder conPaginas(Integer v) { paginas=v; return this; }
+        public Builder conAccesoMinimo(String v) { accesoMinimo=v; return this; }
+        public Builder conLicencias(int v) { licencias=v; return this; }
+        public Libro construir() {
+            if (titulo==null || titulo.isBlank() || autor==null || autor.isBlank()) throw new IllegalArgumentException("Titulo y autor son obligatorios");
+            if (licencias<1 || paginas!=null && paginas<1) throw new IllegalArgumentException("Licencias y paginas deben ser positivas");
+            if (!"BASICO".equals(accesoMinimo) && !"PREMIUM".equals(accesoMinimo)) throw new IllegalArgumentException("Plan de acceso invalido");
+            return new Libro(0,titulo.trim(),autor.trim(),genero.trim(),idioma.trim(),descripcion.trim(),
+                    isbn==null || isbn.isBlank()?null:isbn.trim(),editorial,paginas,accesoMinimo,licencias,true);
         }
     }
 }

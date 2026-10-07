@@ -2,39 +2,14 @@ package com.biblioteca.patterns.creational.singleton;
 
 import java.util.List;
 
-public class ConfiguracionBiblioteca {
-
+// Configuracion inmutable compartida por toda la aplicacion.
+public final class ConfiguracionBiblioteca {
     private static final ConfiguracionBiblioteca INSTANCIA = new ConfiguracionBiblioteca();
+    private final List<String> formatos = List.of("PDF", "EPUB", "MOBI");
 
-    private final String nombreSistema;
-    private final int diasPrestamo;
-    private final int maxPrestamosPorUsuario;
-    private final List<String> formatosPermitidos;
+    private ConfiguracionBiblioteca() {}
 
-    private ConfiguracionBiblioteca() {
-        this.nombreSistema = "Sistema de Biblioteca Digital";
-        this.diasPrestamo = 15;
-        this.maxPrestamosPorUsuario = 3;
-        this.formatosPermitidos = List.of("PDF", "EPUB", "MOBI");
-    }
-
-    public static ConfiguracionBiblioteca getInstancia() {
-        return INSTANCIA;
-    }
-
-    public String getNombreSistema() {
-        return nombreSistema;
-    }
-
-    public int getDiasPrestamo() {
-        return diasPrestamo;
-    }
-
-    public int getMaxPrestamosPorUsuario() {
-        return maxPrestamosPorUsuario;
-    }
-
-    public List<String> getFormatosPermitidos() {
-        return formatosPermitidos;
-    }
+    public static ConfiguracionBiblioteca getInstancia() { return INSTANCIA; }
+    public List<String> getFormatos() { return formatos; }
+    public String getNombre() { return "Biblioteca Digital"; }
 }

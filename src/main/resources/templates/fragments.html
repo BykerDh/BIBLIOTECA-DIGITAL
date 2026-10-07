@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="nav" class="site-header">
+  <div class="shell header-inner">
+    <a class="brand" th:href="@{/}"><span class="brand-mark"><i class="bi bi-book-half"></i></span><span>Biblioteca Digital</span></a>
+    <nav class="main-nav" aria-label="Navegacion principal">
+      <a th:href="@{/}">Inicio</a><a th:href="@{/libros}">Catalogo</a><a th:href="@{/colecciones}">Colecciones</a>
+      <a th:href="@{/recomendaciones}">Para ti</a><a th:href="@{/mi-cuenta}">Mi cuenta</a>
+    </nav>
+    <form th:action="@{/logout}" method="post" class="logout"><input th:replace="~{fragments :: csrf}"><button type="submit" title="Cerrar sesion" aria-label="Cerrar sesion"><i class="bi bi-box-arrow-right"></i></button></form>
+  </div>
+</header>
+<input th:fragment="csrf" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+<footer th:fragment="pie" class="site-footer"><div class="shell">Biblioteca Digital <span>Catalogo, lectura y prestamos en un solo lugar</span></div></footer>
+</body>
+</html>

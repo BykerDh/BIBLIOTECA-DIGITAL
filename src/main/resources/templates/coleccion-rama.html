@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"><body>
+<li th:fragment="rama(nodo)">
+  <strong th:if="${nodo.esColeccion}" th:text="${nodo.nombre}"></strong>
+  <a th:unless="${nodo.esColeccion}" th:href="@{/libros/{id}(id=${nodo.id})}" th:text="${nodo.nombre}"></a>
+  <ul th:if="${!#lists.isEmpty(nodo.hijos)}">
+    <th:block th:each="hijo : ${nodo.hijos}">
+      <li th:replace="~{coleccion-rama :: rama(${hijo})}"></li>
+    </th:block>
+  </ul>
+</li>
+</body></html>
