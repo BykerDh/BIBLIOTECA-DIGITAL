@@ -1,5 +1,7 @@
 package com.biblioteca.patterns.creational.factorymethod;
 
+import com.biblioteca.patterns.structural.flyweight.FabricaFormatosCompartidos;
+import java.util.Locale;
 import org.springframework.http.MediaType;
 
 // Factory Method: cada fabrica decide que lector de formato instanciar.
@@ -13,30 +15,22 @@ public abstract class LectorFactory {
 
     public static class PdfLectorFactory extends LectorFactory {
         @Override public LectorDigital crearLector() {
-            return new LectorDigital() {
-                public String formato() { return "PDF"; }
-                public MediaType tipoContenido() { return MediaType.APPLICATION_PDF; }
-            };
+            return FabricaFormatosCompartidos.obtener("PDF");
         }
     }
     public static class EpubLectorFactory extends LectorFactory {
         @Override public LectorDigital crearLector() {
-            return new LectorDigital() {
-                public String formato() { return "EPUB"; }
-                public MediaType tipoContenido() { return MediaType.parseMediaType("application/epub+zip"); }
-            };
+            return FabricaFormatosCompartidos.obtener("EPUB");
         }
     }
     public static class MobiLectorFactory extends LectorFactory {
         @Override public LectorDigital crearLector() {
-            return new LectorDigital() {
-                public String formato() { return "MOBI"; }
-                public MediaType tipoContenido() { return MediaType.parseMediaType("application/x-mobipocket-ebook"); }
-            };
+            return FabricaFormatosCompartidos.obtener("MOBI");
         }
     }
     public static LectorFactory para(String formato) {
-        return switch (formato.toUpperCase()) {
+        if (formato == null) throw new IllegalArgumentException("Formato obligatorio");
+        return switch (formato.trim().toUpperCase(Locale.ROOT)) {
             case "PDF" -> new PdfLectorFactory();
             case "EPUB" -> new EpubLectorFactory();
             case "MOBI" -> new MobiLectorFactory();

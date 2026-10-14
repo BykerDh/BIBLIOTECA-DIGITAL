@@ -6,7 +6,6 @@ import com.biblioteca.patterns.creational.prototype.PlantillaLibroDigital;
 import com.biblioteca.patterns.creational.singleton.ConfiguracionBiblioteca;
 import com.biblioteca.patterns.structural.adapter.ArchivoResourceAdapter;
 import com.biblioteca.patterns.structural.adapter.ContenidoLibro;
-import com.biblioteca.patterns.structural.composite.ComponenteCatalogo;
 import com.biblioteca.patterns.structural.composite.ComponenteCatalogo.ColeccionNodo;
 import com.biblioteca.patterns.structural.composite.ComponenteCatalogo.LibroHoja;
 import com.biblioteca.repository.BibliotecaRepository;
@@ -98,7 +97,7 @@ public class CatalogoService {
             throw e;
         }
     }
-    private void verificarFirma(Path ruta,String formato) throws IOException {
+    static void verificarFirma(Path ruta,String formato) throws IOException {
         byte[] prefijo;
         try (InputStream entrada=Files.newInputStream(ruta)) { prefijo=entrada.readNBytes(80); }
         if ("PDF".equals(formato) && (prefijo.length<5 || !new String(prefijo,0,5,StandardCharsets.US_ASCII).equals("%PDF-")))
@@ -106,8 +105,11 @@ public class CatalogoService {
         if ("EPUB".equals(formato)) {
             try (ZipFile zip=new ZipFile(ruta.toFile())) {
                 var entry=zip.getEntry("mimetype");
-                if (entry==null || !new String(zip.getInputStream(entry).readAllBytes(),StandardCharsets.US_ASCII).equals("application/epub+zip"))
-                    throw new IllegalArgumentException("El archivo no es EPUB");
+                if (entry==null) throw new IllegalArgumentException("El archivo no es EPUB");
+                try (InputStream mime=zip.getInputStream(entry)) {
+                    if (!new String(mime.readNBytes(32),StandardCharsets.US_ASCII).equals("application/epub+zip"))
+                        throw new IllegalArgumentException("El archivo no es EPUB");
+                }
             }
         }
         if ("MOBI".equals(formato) && (prefijo.length<68 || !new String(prefijo,60,8,StandardCharsets.US_ASCII).equals("BOOKMOBI")))

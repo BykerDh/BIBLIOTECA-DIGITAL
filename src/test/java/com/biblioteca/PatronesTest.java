@@ -53,7 +53,7 @@ class PatronesTest {
         raiz.agregar(hija);
         assertEquals("Spring",raiz.hijos().getFirst().hijos().getFirst().nombre());
     }
-    @Test void adapterYDecoratorProtegenAntesDeAuditar() {
+    @Test void adapterYDecoratorProtegenAntesDeAuditar() throws Exception {
         var archivo=new Archivo(1,2,"PDF","uuid","libro.pdf",3);
         var adaptador=new ArchivoResourceAdapter(archivo,new ByteArrayResource(new byte[]{1,2,3}));
         AtomicInteger auditados=new AtomicInteger();

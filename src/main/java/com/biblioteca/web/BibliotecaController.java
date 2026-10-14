@@ -7,7 +7,6 @@ import com.biblioteca.service.CatalogoService;
 import com.biblioteca.service.RecomendacionService;
 import java.io.IOException;
 import java.security.Principal;
-import java.util.List;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -53,6 +52,7 @@ public class BibliotecaController {
         Libro libro=biblioteca.libro(id);
         model.addAttribute("libro",libro);
         model.addAttribute("archivos",biblioteca.archivos(id));
+        model.addAttribute("fuente",repo.fuente(id).orElse(null));
         model.addAttribute("disponibles",biblioteca.disponibles(libro));
         model.addAttribute("usuario",usuario(principal));
         return "libro";

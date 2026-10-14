@@ -4,8 +4,10 @@ import com.biblioteca.patterns.creational.factorymethod.LectorFactory;
 import com.biblioteca.patterns.structural.adapter.ContenidoLibro;
 import com.biblioteca.patterns.structural.bridge.SesionLectura;
 import com.biblioteca.patterns.structural.decorator.EntregaContenido;
+import com.biblioteca.patterns.structural.proxy.EntregaLibroProxy;
 import com.biblioteca.repository.BibliotecaRepository;
 import java.io.IOException;
+import java.util.Locale;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -22,16 +24,17 @@ public class LecturaService {
     }
     @Transactional
     public ResponseEntity<Resource> entregar(long userId,long bookId,String formato,String modo) throws IOException {
-        String f=formato.toUpperCase();
+        String f=formato.trim().toUpperCase(Locale.ROOT);
+        String m=modo.toUpperCase(Locale.ROOT);
         LectorFactory.LectorDigital lector=LectorFactory.para(f).crearLector();
-        SesionLectura sesion=SesionLectura.crear(modo.toUpperCase(),f,lector);
-        // El adaptador envuelve el archivo; los decoradores validan y registran la entrega.
-        ContenidoLibro base=catalogo.contenido(bookId,f);
+        SesionLectura sesion=SesionLectura.crear(m,f,lector);
+        // El proxy pospone la consulta del archivo hasta que el decorador autoriza el acceso.
+        EntregaContenido diferida=new EntregaLibroProxy(() -> catalogo.contenido(bookId,f));
         EntregaContenido entrega=new EntregaContenido.EntregaAuditada(
-                new EntregaContenido.EntregaProtegida(new EntregaContenido.EntregaBase(base),() -> {
+                new EntregaContenido.EntregaProtegida(diferida,() -> {
                     suscripciones.validarAcceso(userId,catalogo.libro(bookId));
                     if (!repo.tienePrestamo(userId,bookId)) throw new IllegalStateException("Necesitas un prestamo vigente para leer este libro");
-                }),() -> repo.auditar(userId,"LECTURA_"+modo.toUpperCase(),"LIBRO",bookId));
+                }),() -> repo.auditar(userId,"LECTURA_"+m,"LIBRO",bookId));
         ContenidoLibro contenido=entrega.entregar();
         return ResponseEntity.ok().contentType(sesion.tipoContenido())
                 .header(HttpHeaders.CONTENT_DISPOSITION,sesion.disposicion(contenido.metadatos().nombreOriginal()).toString())

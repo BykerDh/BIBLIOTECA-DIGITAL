@@ -23,6 +23,7 @@ public class BibliotecaRepository {
     private static final RowMapper<Suscripcion> SUSCRIPCION = (r,n) -> new Suscripcion(r.getLong("id"),r.getLong("usuario_id"),r.getString("plan_codigo"),r.getTimestamp("inicia_en").toLocalDateTime(),r.getTimestamp("vence_en").toLocalDateTime());
     private static final RowMapper<Libro> LIBRO = (r,n) -> new Libro(r.getLong("id"),r.getString("titulo"),r.getString("autor"),r.getString("genero"),r.getString("idioma"),r.getString("descripcion"),r.getString("isbn"),r.getString("editorial"),(Integer)r.getObject("paginas"),r.getString("acceso_minimo"),r.getInt("licencias"),r.getBoolean("activo"));
     private static final RowMapper<Archivo> ARCHIVO = (r,n) -> new Archivo(r.getLong("id"),r.getLong("libro_id"),r.getString("formato"),r.getString("clave_archivo"),r.getString("nombre_original"),r.getLong("tamano"));
+    private static final RowMapper<FuenteLibro> FUENTE = (r,n) -> new FuenteLibro(r.getLong("libro_id"),r.getString("proveedor"),r.getString("identificador_externo"),r.getString("fuente_url"),r.getString("derechos"),r.getString("sha256"));
     private static final RowMapper<Prestamo> PRESTAMO = (r,n) -> new Prestamo(r.getLong("id"),r.getLong("usuario_id"),r.getLong("libro_id"),r.getTimestamp("prestado_en").toLocalDateTime(),r.getTimestamp("vence_en").toLocalDateTime(),r.getTimestamp("devuelto_en") == null ? null : r.getTimestamp("devuelto_en").toLocalDateTime());
     private static final RowMapper<Reserva> RESERVA = (r,n) -> new Reserva(r.getLong("id"),r.getLong("usuario_id"),r.getLong("libro_id"),r.getString("estado"),r.getTimestamp("creada_en").toLocalDateTime());
     private static final RowMapper<Aviso> AVISO = (r,n) -> new Aviso(r.getLong("id"),r.getString("mensaje"),r.getBoolean("leida"),r.getTimestamp("creada_en").toLocalDateTime());
@@ -97,6 +98,16 @@ public class BibliotecaRepository {
         return jdbc.query("SELECT * FROM archivos_libro WHERE libro_id=? AND formato=?",ARCHIVO,libroId,formato).stream().findFirst().orElseThrow(() -> new IllegalArgumentException("Formato no disponible"));
     }
     public List<Archivo> archivos(long libroId) { return jdbc.query("SELECT * FROM archivos_libro WHERE libro_id=? ORDER BY formato",ARCHIVO,libroId); }
+    public Optional<FuenteLibro> fuente(long libroId) {
+        return jdbc.query("SELECT * FROM fuentes_libro WHERE libro_id=?",FUENTE,libroId).stream().findFirst();
+    }
+    public Optional<FuenteLibro> fuenteExterna(String proveedor,String identificador) {
+        return jdbc.query("SELECT * FROM fuentes_libro WHERE proveedor=? AND identificador_externo=?",FUENTE,proveedor,identificador).stream().findFirst();
+    }
+    public void registrarFuente(FuenteLibro fuente) {
+        jdbc.update("INSERT INTO fuentes_libro(libro_id,proveedor,identificador_externo,fuente_url,derechos,sha256) VALUES(?,?,?,?,?,?)",
+                fuente.libroId(),fuente.proveedor(),fuente.identificadorExterno(),fuente.fuenteUrl(),fuente.derechos(),fuente.sha256());
+    }
     public int prestamosActivosLibro(long libroId) { return jdbc.queryForObject("SELECT COUNT(*) FROM prestamos WHERE libro_id=? AND devuelto_en IS NULL",Integer.class,libroId); }
     public int prestamosActivosUsuario(long usuarioId) { return jdbc.queryForObject("SELECT COUNT(*) FROM prestamos WHERE usuario_id=? AND devuelto_en IS NULL",Integer.class,usuarioId); }
     public boolean yaPrestado(long usuarioId,long libroId) { return jdbc.queryForObject("SELECT COUNT(*) FROM prestamos WHERE usuario_id=? AND libro_id=? AND devuelto_en IS NULL",Integer.class,usuarioId,libroId)>0; }

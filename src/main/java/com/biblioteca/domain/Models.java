@@ -13,6 +13,8 @@ public final class Models {
     public record Libro(long id, String titulo, String autor, String genero, String idioma, String descripcion,
                         String isbn, String editorial, Integer paginas, String accesoMinimo, int licencias, boolean activo) {}
     public record Archivo(long id, long libroId, String formato, String claveArchivo, String nombreOriginal, long tamano) {}
+    public record FuenteLibro(long libroId, String proveedor, String identificadorExterno,
+                              String fuenteUrl, String derechos, String sha256) {}
     public record Prestamo(long id, long usuarioId, long libroId, LocalDateTime prestadoEn,
                            LocalDateTime venceEn, LocalDateTime devueltoEn) {}
     public record Reserva(long id, long usuarioId, long libroId, String estado, LocalDateTime creadaEn) {}

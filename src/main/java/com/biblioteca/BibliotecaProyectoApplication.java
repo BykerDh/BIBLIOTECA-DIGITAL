@@ -6,6 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class BibliotecaProyectoApplication {
     public static void main(String[] args) {
-        SpringApplication.run(BibliotecaProyectoApplication.class, args);
+        var contexto=SpringApplication.run(BibliotecaProyectoApplication.class, args);
+        // El comando de importacion termina solo despues de completar todos los runners.
+        if (contexto.getEnvironment().matchesProfiles("importar-catalogo")) contexto.close();
     }
 }
