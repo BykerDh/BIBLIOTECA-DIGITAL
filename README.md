@@ -1,6 +1,23 @@
 # Biblioteca Digital
 
-Aplicacion Spring MVC para catalogo, entrega de PDF/EPUB/MOBI, prestamos, reservas, recomendaciones y suscripciones. Incluye los patrones Singleton, Factory Method, Abstract Factory, Prototype, Builder, Adapter, Bridge, Composite, Decorator, Facade, Flyweight y Proxy.
+Aplicacion Spring MVC para catalogo, entrega de PDF/EPUB/MOBI, prestamos, reservas, recomendaciones y suscripciones.
+
+## Organizacion
+
+- `src/main/java/com/biblioteca`: codigo de la aplicacion.
+- `patterns/creational`: Singleton, Factory Method, Abstract Factory, Prototype y Builder.
+- `patterns/structural`: Adapter, Bridge, Composite, Decorator, Facade, Flyweight y Proxy.
+- `patterns/behavioral`: Iterator, Mediator y Memento.
+- `src/main/resources/templates` y `static`: pantallas y estilos.
+- `src/main/resources/db/migration`: esquema de MariaDB versionado con Flyway.
+- `src/test`: pruebas automatizadas. No son codigo sobrante.
+- `scripts`: configuracion, cambio de clave, importacion y comprobacion local.
+- `catalogo`: manifiesto y procedencia de los 100 libros.
+- `storage`: archivos reales de los libros; `storage/importacion` conserva los originales usados por el importador. No se debe borrar al limpiar el proyecto.
+- `Documentacion`: entregas y material academico.
+- `target`: resultado regenerable de Maven, excluido de Git.
+
+Las tres carpetas de patrones estan dentro de `src/main/java/com/biblioteca/patterns`.
 
 ## Inicio local con XAMPP
 
@@ -28,8 +45,27 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\importar-catal
 
 La carga conserva los registros existentes y agrega la procedencia en `fuentes_libro`. Las ediciones conservan su licencia original. Gutenberg las clasifica como dominio publico en Estados Unidos; revisa las condiciones de tu pais antes de redistribuirlas. Los EPUB se descargan para abrirse en un lector compatible; los PDF pueden abrirse en el navegador.
 
-La explicacion de Flyweight, Proxy y Composite, las instrucciones y los diagramas PlantUML estan en [la guia](Documentacion/2%20CORTE/Flyweight-Proxy/GUIA.md).
+Las entregas academicas se conservan en `Documentacion`, organizadas por corte.
+
+## Patrones de comportamiento
+
+- Iterator: abrir Colecciones y pulsar una coleccion para listar sus libros y los de sus subcolecciones sin duplicados.
+- Mediator: al devolver un libro o cancelar una reserva, coordina el aviso al primer usuario en espera si hay cupo.
+- Memento: en Editar libro, Historial de la ficha permite deshacer hasta diez cambios descriptivos. No revierte archivos, ISBN, licencias ni prestamos.
 
 ## Pruebas
 
 `./mvnw.cmd test` ejecuta las pruebas de patrones y reglas de circulacion. La meta de mas de 100.000 usuarios es una meta de capacidad: requiere infraestructura y pruebas de carga antes de afirmarse como rendimiento alcanzado.
+
+Para incluir las pruebas con MariaDB real, iniciar MySQL en XAMPP y ejecutar:
+
+```powershell
+. .\.local.env.ps1
+$env:BIBLIOTECA_DB_TEST='true'
+.\mvnw.cmd verify
+Remove-Item Env:BIBLIOTECA_DB_TEST
+```
+
+Los datos creados por esas pruebas se revierten al terminar cada caso; las migraciones del esquema permanecen aplicadas.
+
+Para regenerar los archivos de compilacion, detener primero la aplicacion y ejecutar `./mvnw.cmd clean package`. No borrar `storage`, `.local.env.ps1`, las migraciones ni `.mvn`. No publicar contrasenas en Git.

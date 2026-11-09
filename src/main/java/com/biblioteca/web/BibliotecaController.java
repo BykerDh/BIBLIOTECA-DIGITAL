@@ -39,12 +39,13 @@ public class BibliotecaController {
     public String libros(@RequestParam(defaultValue="") String q,@RequestParam(defaultValue="0") int pagina,Principal principal,Model model) {
         if (q.length()>200) throw new IllegalArgumentException("La busqueda supera los 200 caracteres");
         int p=Math.max(0,pagina);
+        Usuario u=usuario(principal);
         model.addAttribute("libros",biblioteca.buscar(q,p));
         model.addAttribute("total",biblioteca.total(q));
         model.addAttribute("pagina",p);
         model.addAttribute("q",q);
-        model.addAttribute("usuario",usuario(principal));
-        if (!q.isBlank()) repo.guardarBusqueda(usuario(principal).id(),q.trim().substring(0,Math.min(200,q.trim().length())));
+        model.addAttribute("usuario",u);
+        if (!q.isBlank()) repo.guardarBusqueda(u.id(),q.trim());
         return "libros";
     }
     @GetMapping("/libros/{id}")
@@ -134,5 +135,13 @@ public class BibliotecaController {
         model.addAttribute("usuario",usuario(principal));
         model.addAttribute("colecciones",catalogo.arbolColecciones());
         return "colecciones";
+    }
+    @GetMapping("/colecciones/{id}/libros")
+    public String librosColeccion(@PathVariable long id,@RequestParam(defaultValue="0") int pagina,
+                                  Principal principal,Model model) {
+        model.addAttribute("usuario",usuario(principal));
+        model.addAttribute("recorrido",catalogo.librosColeccion(id,pagina));
+        model.addAttribute("coleccionId",id);
+        return "coleccion-libros";
     }
 }

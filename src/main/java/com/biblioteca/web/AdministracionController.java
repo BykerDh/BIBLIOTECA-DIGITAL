@@ -19,8 +19,7 @@ public class AdministracionController {
     @GetMapping("/libros/nuevo") public String nuevo(Model model) { return "admin-libro"; }
     @GetMapping("/libros/{id}/editar")
     public String editar(@PathVariable long id,Model model) {
-        model.addAttribute("libro",catalogo.libro(id));
-        model.addAttribute("archivos",catalogo.archivos(id));
+        model.addAllAttributes(catalogo.datosEdicion(id));
         return "admin-libro";
     }
     @PostMapping("/libros/guardar")
@@ -28,10 +27,18 @@ public class AdministracionController {
                           @RequestParam String genero,@RequestParam String idioma,@RequestParam String descripcion,
                           @RequestParam(required=false) String isbn,@RequestParam(required=false) String editorial,
                           @RequestParam(required=false) Integer paginas,@RequestParam String accesoMinimo,
-                          @RequestParam int licencias) {
+                          @RequestParam int licencias,@RequestParam(required=false) Long version) {
         if (id==null) id=catalogo.crear(titulo,autor,genero,idioma,descripcion,isbn,editorial,paginas,accesoMinimo,licencias);
-        else catalogo.actualizar(id,titulo,autor,genero,idioma,descripcion,isbn,editorial,paginas,accesoMinimo,licencias);
+        else {
+            if (version==null) throw new IllegalArgumentException("Recarga la ficha antes de guardar");
+            catalogo.actualizar(id,version,titulo,autor,genero,idioma,descripcion,isbn,editorial,paginas,accesoMinimo,licencias);
+        }
         return "redirect:/admin/libros/"+id+"/editar?guardado";
+    }
+    @PostMapping("/libros/{id}/deshacer")
+    public String deshacer(@PathVariable long id,@RequestParam long version) {
+        catalogo.deshacer(id,version);
+        return "redirect:/admin/libros/"+id+"/editar?restaurado";
     }
     @PostMapping("/libros/{id}/archivo")
     public String subir(@PathVariable long id,@RequestParam String formato,@RequestParam MultipartFile archivo) throws IOException {

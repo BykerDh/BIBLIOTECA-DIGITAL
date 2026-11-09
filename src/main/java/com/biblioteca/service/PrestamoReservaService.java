@@ -1,6 +1,7 @@
 package com.biblioteca.service;
 
 import com.biblioteca.domain.Models.*;
+import com.biblioteca.patterns.behavioral.mediator.MediadorCirculacion;
 import com.biblioteca.patterns.creational.abstractfactory.FabricaPlan;
 import com.biblioteca.repository.BibliotecaRepository;
 import java.time.LocalDateTime;
@@ -12,8 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class PrestamoReservaService {
     private final BibliotecaRepository repo;
     private final SuscripcionService suscripciones;
-    public PrestamoReservaService(BibliotecaRepository repo,SuscripcionService suscripciones) {
-        this.repo=repo; this.suscripciones=suscripciones;
+    private final MediadorCirculacion mediador;
+    public PrestamoReservaService(BibliotecaRepository repo,SuscripcionService suscripciones,MediadorCirculacion mediador) {
+        this.repo=repo; this.suscripciones=suscripciones; this.mediador=mediador;
     }
     public List<Prestamo> prestamos(long userId) { return repo.prestamosUsuario(userId); }
     public List<Reserva> reservas(long userId) { return repo.reservasUsuario(userId); }
@@ -35,6 +37,7 @@ public class PrestamoReservaService {
         LocalDateTime ahora=LocalDateTime.now();
         long id=repo.crearPrestamo(userId,bookId,ahora,ahora.plusDays(politica.diasPrestamo()));
         primera.filter(r -> r.usuarioId()==userId).ifPresent(r -> repo.cambiarReserva(r.id(),"COMPLETADA"));
+        mediador.disponibilidadCambiada(bookId);
         repo.auditar(userId,"PRESTAMO","LIBRO",bookId);
         return id;
     }
@@ -48,8 +51,7 @@ public class PrestamoReservaService {
         if (prestamo.usuarioId()!=userId || prestamo.devueltoEn()!=null) throw new IllegalArgumentException("Prestamo no disponible");
         repo.devolver(prestamoId);
         long bookId=prestamo.libroId();
-        repo.primeraReserva(bookId).ifPresent(r -> repo.notificar(r.usuarioId(),
-                "Ya puedes solicitar el prestamo de " + repo.libro(bookId).titulo()));
+        mediador.disponibilidadCambiada(bookId);
         repo.auditar(userId,"DEVOLUCION","PRESTAMO",prestamoId);
     }
 
@@ -75,9 +77,8 @@ public class PrestamoReservaService {
         Reserva reserva=repo.reservasUsuario(userId).stream().filter(r -> r.id()==reservaId).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada"));
         repo.bloquearLibro(reserva.libroId());
+        if (!"PENDIENTE".equals(reserva.estado())) throw new IllegalStateException("La reserva ya no esta pendiente");
         repo.cancelarReserva(reservaId,userId);
-        Libro libro=repo.libro(reserva.libroId());
-        if (disponibles(libro)>0) repo.primeraReserva(libro.id()).ifPresent(r ->
-                repo.notificar(r.usuarioId(),"Ya puedes solicitar el prestamo de " + libro.titulo()));
+        mediador.disponibilidadCambiada(reserva.libroId());
     }
 }

@@ -1,6 +1,9 @@
 package com.biblioteca.service;
 
 import com.biblioteca.domain.Models.*;
+import com.biblioteca.patterns.behavioral.iterator.RecorridoColeccion;
+import com.biblioteca.patterns.behavioral.memento.FichaEditable;
+import com.biblioteca.patterns.behavioral.memento.HistorialFicha;
 import com.biblioteca.patterns.creational.builder.FichaLibro;
 import com.biblioteca.patterns.creational.prototype.PlantillaLibroDigital;
 import com.biblioteca.patterns.creational.singleton.ConfiguracionBiblioteca;
@@ -30,8 +33,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class CatalogoService {
     private final BibliotecaRepository repo;
     private final Path storage;
-    public CatalogoService(BibliotecaRepository repo,@Value("${app.storage.path}") String storageDir) throws IOException {
+    private final HistorialFicha historial;
+    public CatalogoService(BibliotecaRepository repo,@Value("${app.storage.path}") String storageDir,HistorialFicha historial) throws IOException {
         this.repo=repo;
+        this.historial=historial;
         this.storage=Path.of(storageDir).toAbsolutePath().normalize();
         Files.createDirectories(storage);
     }
@@ -40,6 +45,43 @@ public class CatalogoService {
     public Libro libro(long id) { return repo.libro(id); }
     public List<Archivo> archivos(long id) { return repo.archivos(id); }
     public List<Coleccion> colecciones() { return repo.colecciones(); }
+
+    public record PaginaColeccion(String nombre,List<LibroHoja> libros,int pagina,int total) {}
+
+    public PaginaColeccion librosColeccion(long id,int pagina) {
+        Coleccion coleccion=repo.colecciones().stream().filter(c -> c.id()==id).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Coleccion no encontrada"));
+        // Se selecciona el nodo del arbol completo; Iterator oculta la profundidad al cliente.
+        var raices=arbolColecciones();
+        var pendientes=new java.util.ArrayDeque<ColeccionNodo>(raices);
+        ColeccionNodo seleccionada=null;
+        var visitadas=new java.util.HashSet<Long>();
+        while (!pendientes.isEmpty()) {
+            var nodo=pendientes.removeFirst();
+            if (!visitadas.add(nodo.id())) continue;
+            if (nodo.id()==id) { seleccionada=nodo; break; }
+            for (var hijo:nodo.hijos()) if (hijo instanceof ColeccionNodo c) pendientes.add(c);
+        }
+        if (seleccionada==null) throw new IllegalStateException("Coleccion fuera del arbol");
+        int p=Math.max(0,pagina),total=0;
+        List<LibroHoja> resultado=new ArrayList<>();
+        long inicio=(long)p*20;
+        for (LibroHoja libro:new RecorridoColeccion(List.of(seleccionada))) {
+            if (total>=inicio && resultado.size()<20) resultado.add(libro);
+            total++;
+        }
+        return new PaginaColeccion(coleccion.nombre(),List.copyOf(resultado),p,total);
+    }
+
+    public long versionFicha(long id) { return historial.version(id); }
+    public List<HistorialFicha.Entrada> historial(long id) { return historial.entradas(id); }
+
+    @Transactional(readOnly=true)
+    public Map<String,Object> datosEdicion(long id) {
+        // Lee ficha y version en la misma instantanea de la base de datos.
+        return Map.of("libro",repo.libro(id),"version",historial.version(id),
+                "historial",historial.entradas(id),"archivos",repo.archivos(id));
+    }
 
     @Transactional
     public long crear(String titulo,String autor,String genero,String idioma,String descripcion,String isbn,
@@ -52,16 +94,33 @@ public class CatalogoService {
         return id;
     }
     @Transactional
-    public void actualizar(long id,String titulo,String autor,String genero,String idioma,String descripcion,
+    public void actualizar(long id,long version,String titulo,String autor,String genero,String idioma,String descripcion,
                            String isbn,String editorial,Integer paginas,String acceso,int licencias) {
         repo.bloquearLibro(id);
+        historial.comprobarVersion(id,version);
+        Libro anterior=repo.libro(id);
         if (licencias<repo.prestamosActivosLibro(id)) throw new IllegalStateException("No puedes reducir las licencias por debajo de los prestamos activos");
         Libro ficha=new FichaLibro.Builder(titulo,autor).conGenero(genero).conIdioma(idioma)
                 .conDescripcion(descripcion).conIsbn(isbn).conEditorial(editorial)
                 .conPaginas(paginas).conAccesoMinimo(acceso).conLicencias(licencias).construir();
-        repo.actualizarLibro(new Libro(id,ficha.titulo(),ficha.autor(),ficha.genero(),ficha.idioma(),ficha.descripcion(),
-                ficha.isbn(),ficha.editorial(),ficha.paginas(),ficha.accesoMinimo(),ficha.licencias(),true));
+        // Solo los cambios descriptivos generan un punto de deshacer.
+        var nuevoEstado=new Libro(id,ficha.titulo(),ficha.autor(),ficha.genero(),ficha.idioma(),ficha.descripcion(),
+                ficha.isbn(),ficha.editorial(),ficha.paginas(),ficha.accesoMinimo(),ficha.licencias(),true);
+        var recuerdo=new FichaEditable(anterior).guardar();
+        if (!recuerdo.equals(new FichaEditable(nuevoEstado).guardar())) historial.guardar(recuerdo);
+        repo.actualizarLibro(nuevoEstado);
+        historial.avanzarVersion(id);
         repo.auditar(null,"ACTUALIZAR_LIBRO","LIBRO",id);
+    }
+    @Transactional
+    public void deshacer(long id,long version) {
+        repo.bloquearLibro(id);
+        historial.comprobarVersion(id,version);
+        FichaEditable ficha=new FichaEditable(repo.libro(id));
+        ficha.restaurar(historial.extraerUltimo(id));
+        repo.actualizarLibro(ficha.estado());
+        historial.avanzarVersion(id);
+        repo.auditar(null,"DESHACER_FICHA","LIBRO",id);
     }
     @Transactional
     public long clonar(long id,String nuevoTitulo) {

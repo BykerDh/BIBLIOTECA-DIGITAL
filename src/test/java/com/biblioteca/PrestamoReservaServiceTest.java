@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 class PrestamoReservaServiceTest {
     private final BibliotecaRepository repo=mock(BibliotecaRepository.class);
     private final SuscripcionService suscripciones=mock(SuscripcionService.class);
-    private final PrestamoReservaService servicio=new PrestamoReservaService(repo,suscripciones);
+    private final com.biblioteca.patterns.behavioral.mediator.MediadorCirculacion mediador=mock(com.biblioteca.patterns.behavioral.mediator.MediadorCirculacion.class);
+    private final PrestamoReservaService servicio=new PrestamoReservaService(repo,suscripciones,mediador);
     private final Libro libro=new Libro(9,"Java","Autor","Programacion","es","Texto",null,null,180,"BASICO",1,true);
     private final Plan plan=new Plan("BASICO","Basico",7,2,2,false);
 

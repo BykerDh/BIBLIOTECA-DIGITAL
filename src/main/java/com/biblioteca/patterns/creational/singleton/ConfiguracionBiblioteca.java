@@ -11,5 +11,4 @@ public final class ConfiguracionBiblioteca {
 
     public static ConfiguracionBiblioteca getInstancia() { return INSTANCIA; }
     public List<String> getFormatos() { return formatos; }
-    public String getNombre() { return "Biblioteca Digital"; }
 }
