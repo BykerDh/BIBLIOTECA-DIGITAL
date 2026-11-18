@@ -1,25 +1,5 @@
-<!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title th:text="${recorrido.nombre} + ' | Biblioteca Digital'"></title>
-  <link rel="stylesheet" th:href="@{/css/app.css}">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-</head>
-<body>
-<header th:replace="~{fragments :: nav}"></header>
-<main class="shell page">
-  <div class="page-title"><div><h1 th:text="${recorrido.nombre}"></h1>
-    <p th:text="${recorrido.total} + ' libros en esta coleccion y sus subcolecciones'"></p></div>
-    <a class="btn secondary" th:href="@{/colecciones}"><i class="bi bi-arrow-left"></i> Colecciones</a></div>
-  <ul class="list">
-    <li th:each="libro : ${recorrido.libros}"><a th:href="@{/libros/{id}(id=${libro.id})}" th:text="${libro.nombre}"></a></li>
-  </ul>
-  <p class="empty" th:if="${#lists.isEmpty(recorrido.libros)}">No hay libros en esta pagina.</p>
-  <nav class="page-actions" aria-label="Paginas de la coleccion">
-    <a class="btn secondary" th:if="${recorrido.pagina > 0}" th:href="@{/colecciones/{id}/libros(id=${coleccionId},pagina=${recorrido.pagina - 1})}" aria-label="Pagina anterior" title="Pagina anterior"><i class="bi bi-chevron-left"></i></a>
-    <span class="meta" th:text="'Pagina ' + ${recorrido.pagina + 1}"></span>
-    <a class="btn secondary" th:if="${(recorrido.pagina + 1L) * 20 < recorrido.total}" th:href="@{/colecciones/{id}/libros(id=${coleccionId},pagina=${recorrido.pagina + 1})}" aria-label="Pagina siguiente" title="Pagina siguiente"><i class="bi bi-chevron-right"></i></a>
-  </nav>
-</main><footer th:replace="~{fragments :: pie}"></footer>
-</body></html>
+<!DOCTYPE html><html lang="es" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head(${recorrido.nombre})}"></head><body><header th:replace="~{fragments :: cabecera}"></header><main id="contenido" class="shell page">
+<nav class="breadcrumb" aria-label="Ruta de navegación"><a th:href="@{/colecciones}">Colecciones</a><span aria-hidden="true">/</span><span>Explorar colección</span></nav><div class="page-title"><div><span class="eyebrow">LECTURAS CON UN HILO EN COMÚN</span><h1 th:text="${recorrido.nombre}"></h1><p th:text="${recorrido.total} + ' libros en esta colección y sus subcolecciones'"></p></div><a class="btn secondary" th:href="@{/colecciones}">← Colecciones</a></div>
+<ol class="list collection-list"><li th:each="libro,estado : ${recorrido.libros}"><a th:href="@{/libros/{id}(id=${libro.id})}"><span class="list-number" th:text="${recorrido.pagina * 20 + estado.index + 1}"></span><span th:text="${libro.nombre}"></span><span class="list-arrow" aria-hidden="true">↗</span></a></li></ol><div class="empty" th:if="${#lists.isEmpty(recorrido.libros)}"><h2>Esta página aún no tiene lecturas</h2><p>Explora otras colecciones para seguir descubriendo.</p></div>
+<nav class="page-actions" aria-label="Páginas de la colección"><a class="btn secondary" th:if="${recorrido.pagina > 0}" th:href="@{/colecciones/{id}/libros(id=${coleccionId},pagina=${recorrido.pagina - 1})}">← Anterior</a><span class="meta" th:text="'Página ' + ${recorrido.pagina + 1}"></span><a class="btn secondary" th:if="${(recorrido.pagina + 1L) * 20 < recorrido.total}" th:href="@{/colecciones/{id}/libros(id=${coleccionId},pagina=${recorrido.pagina + 1})}">Siguiente →</a></nav>
+</main><footer th:replace="~{fragments :: pie}"></footer></body></html>

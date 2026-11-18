@@ -15,11 +15,12 @@ public class SeguridadConfig {
     @Bean
     SecurityFilterChain filtros(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(a -> a
-                .requestMatchers("/css/**","/login","/registrarse","/error","/actuator/health/**").permitAll()
+                .requestMatchers("/css/**","/images/**","/js/interfaz.js","/login","/registrarse","/error","/actuator/health/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .formLogin(f -> f.loginPage("/login").defaultSuccessUrl("/",true).permitAll())
-            .logout(l -> l.logoutSuccessUrl("/login?salio"));
+            .logout(l -> l.logoutSuccessUrl("/login?salio"))
+            .headers(h -> h.frameOptions(f -> f.sameOrigin()));
         return http.build();
     }
 

@@ -1,21 +1,24 @@
 package com.biblioteca.service;
 
 import com.biblioteca.domain.Models.*;
-import com.biblioteca.patterns.behavioral.mediator.MediadorCirculacion;
+import com.biblioteca.patterns.behavioral.observer.EventoCirculacion;
+import com.biblioteca.patterns.behavioral.observer.PublicadorCirculacion;
+import com.biblioteca.patterns.behavioral.state.CicloPrestamo;
 import com.biblioteca.patterns.creational.abstractfactory.FabricaPlan;
 import com.biblioteca.repository.BibliotecaRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PrestamoReservaService {
     private final BibliotecaRepository repo;
     private final SuscripcionService suscripciones;
-    private final MediadorCirculacion mediador;
-    public PrestamoReservaService(BibliotecaRepository repo,SuscripcionService suscripciones,MediadorCirculacion mediador) {
-        this.repo=repo; this.suscripciones=suscripciones; this.mediador=mediador;
+    private final PublicadorCirculacion eventos;
+    public PrestamoReservaService(BibliotecaRepository repo,SuscripcionService suscripciones,PublicadorCirculacion eventos) {
+        this.repo=repo; this.suscripciones=suscripciones; this.eventos=eventos;
     }
     public List<Prestamo> prestamos(long userId) { return repo.prestamosUsuario(userId); }
     public List<Reserva> reservas(long userId) { return repo.reservasUsuario(userId); }
@@ -37,22 +40,22 @@ public class PrestamoReservaService {
         LocalDateTime ahora=LocalDateTime.now();
         long id=repo.crearPrestamo(userId,bookId,ahora,ahora.plusDays(politica.diasPrestamo()));
         primera.filter(r -> r.usuarioId()==userId).ifPresent(r -> repo.cambiarReserva(r.id(),"COMPLETADA"));
-        mediador.disponibilidadCambiada(bookId);
-        repo.auditar(userId,"PRESTAMO","LIBRO",bookId);
+        eventos.publicar(new EventoCirculacion(EventoCirculacion.Tipo.PRESTAMO,userId,bookId,id));
         return id;
     }
 
-    @Transactional
+    @Transactional(isolation=Isolation.READ_COMMITTED)
     public void devolver(long userId,long prestamoId) {
         Prestamo prestamo=repo.prestamo(prestamoId);
         repo.bloquearUsuario(userId);
         repo.bloquearLibro(prestamo.libroId());
+        // Tras esperar los bloqueos, relee la devolucion que otra solicitud pudo confirmar.
         prestamo=repo.prestamo(prestamoId);
         if (prestamo.usuarioId()!=userId || prestamo.devueltoEn()!=null) throw new IllegalArgumentException("Prestamo no disponible");
+        new CicloPrestamo(prestamo,LocalDateTime.now()).devolver();
         repo.devolver(prestamoId);
         long bookId=prestamo.libroId();
-        mediador.disponibilidadCambiada(bookId);
-        repo.auditar(userId,"DEVOLUCION","PRESTAMO",prestamoId);
+        eventos.publicar(new EventoCirculacion(EventoCirculacion.Tipo.DEVOLUCION,userId,bookId,prestamoId));
     }
 
     @Transactional
@@ -79,6 +82,6 @@ public class PrestamoReservaService {
         repo.bloquearLibro(reserva.libroId());
         if (!"PENDIENTE".equals(reserva.estado())) throw new IllegalStateException("La reserva ya no esta pendiente");
         repo.cancelarReserva(reservaId,userId);
-        mediador.disponibilidadCambiada(reserva.libroId());
+        eventos.publicar(new EventoCirculacion(EventoCirculacion.Tipo.CANCELACION_RESERVA,userId,reserva.libroId(),reservaId));
     }
 }

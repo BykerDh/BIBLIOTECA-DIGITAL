@@ -1,6 +1,7 @@
 package com.biblioteca.domain;
 
 import java.time.LocalDateTime;
+import com.biblioteca.patterns.behavioral.state.CicloPrestamo;
 
 public final class Models {
     private Models() {}
@@ -16,7 +17,10 @@ public final class Models {
     public record FuenteLibro(long libroId, String proveedor, String identificadorExterno,
                               String fuenteUrl, String derechos, String sha256) {}
     public record Prestamo(long id, long usuarioId, long libroId, LocalDateTime prestadoEn,
-                           LocalDateTime venceEn, LocalDateTime devueltoEn) {}
+                           LocalDateTime venceEn, LocalDateTime devueltoEn) {
+        public String estado() { return new CicloPrestamo(this,LocalDateTime.now()).nombre(); }
+        public boolean puedeDevolver() { return new CicloPrestamo(this,LocalDateTime.now()).permiteDevolucion(); }
+    }
     public record Reserva(long id, long usuarioId, long libroId, String estado, LocalDateTime creadaEn) {}
     public record Aviso(long id, String mensaje, boolean leida, LocalDateTime creadaEn) {}
     public record Coleccion(long id, String nombre, Long padreId) {}

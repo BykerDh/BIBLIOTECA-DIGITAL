@@ -1,17 +1,46 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(titulo)">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#183e35"><title th:text="${titulo} + ' | Biblioteca UTS'">Biblioteca UTS</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+  <script defer th:src="@{/js/interfaz.js}"></script>
+</head>
 <body>
-<header th:fragment="nav" class="site-header">
+<a th:fragment="marca" class="brand" th:href="@{/}">
+  <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M16 8c-4-3-8-3-12-2v19c5-1 8 0 12 3 4-3 7-4 12-3V6c-4-1-8-1-12 2Zm0 0v20M8 12l4 1m-4 4 4 1m8-5 4-1m-4 6 4-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  <span>Biblioteca <b>UTS</b><small>Un lugar para descubrir</small></span>
+</a>
+<header th:fragment="cabecera" class="site-header">
+  <a class="skip-link" href="#contenido">Ir al contenido</a>
   <div class="shell header-inner">
-    <a class="brand" th:href="@{/}"><span class="brand-mark"><i class="bi bi-book-half"></i></span><span>Biblioteca Digital</span></a>
-    <nav class="main-nav" aria-label="Navegacion principal">
-      <a th:href="@{/}">Inicio</a><a th:href="@{/libros}">Catalogo</a><a th:href="@{/colecciones}">Colecciones</a>
-      <a th:href="@{/recomendaciones}">Para ti</a><a th:href="@{/mi-cuenta}">Mi cuenta</a>
+    <a th:replace="~{fragments :: marca}"></a>
+    <button class="menu-toggle" type="button" data-menu aria-controls="navegacion" aria-expanded="false"><i class="bi bi-list" aria-hidden="true"></i> Menú</button>
+    <nav id="navegacion" class="main-nav" aria-label="Navegación principal">
+      <a data-nav="/" th:href="@{/}">Inicio</a>
+      <a data-nav="/libros" th:href="@{/libros}">Catálogo</a>
+      <a data-nav="/colecciones" th:href="@{/colecciones}">Colecciones</a>
+      <a data-nav="/recomendaciones" th:href="@{/recomendaciones}">Para ti</a>
+      <a data-nav="/mi-cuenta" th:href="@{/mi-cuenta}">Mi cuenta</a>
+      <a th:if="${administrador}" data-nav="/admin" th:href="@{/admin/gestion}">Administración</a>
     </nav>
-    <form th:action="@{/logout}" method="post" class="logout"><input th:replace="~{fragments :: csrf}"><button type="submit" title="Cerrar sesion" aria-label="Cerrar sesion"><i class="bi bi-box-arrow-right"></i></button></form>
+    <form th:action="@{/logout}" method="post" class="logout"><input th:replace="~{fragments :: csrf}"><button type="submit" title="Cerrar sesión" aria-label="Cerrar sesión"><i class="bi bi-box-arrow-right" aria-hidden="true"></i></button></form>
   </div>
 </header>
 <input th:fragment="csrf" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-<footer th:fragment="pie" class="site-footer"><div class="shell">Biblioteca Digital <span>Catalogo, lectura y prestamos en un solo lugar</span></div></footer>
-</body>
-</html>
+<div th:fragment="portada(libro)" class="book-cover" th:classappend="'tone-' + ${libro.id % 6}" aria-hidden="true">
+  <div class="cover-object"><span class="cover-edition">BIBLIOTECA UTS</span><span class="cover-title" th:text="${libro.titulo}"></span><span class="cover-ornament">✦</span><span class="cover-author" th:text="${libro.autor}"></span></div>
+</div>
+<article th:fragment="tarjeta(libro)" class="book-card">
+  <a class="cover-link" tabindex="-1" aria-hidden="true" th:href="@{/libros/{id}(id=${libro.id})}"><div th:replace="~{fragments :: portada(${libro})}"></div></a>
+  <div class="book-body"><span class="eyebrow" th:text="${libro.genero}"></span><h3><a th:href="@{/libros/{id}(id=${libro.id})}" th:text="${libro.titulo}"></a></h3><p th:text="${libro.autor}"></p><div class="book-bottom"><span class="pill" th:classappend="${libro.accesoMinimo == 'PREMIUM' ? 'premium' : ''}" th:text="${libro.accesoMinimo == 'PREMIUM' ? 'Premium' : 'Básico'}"></span><a class="book-cta" th:href="@{/libros/{id}(id=${libro.id})}" th:attr="aria-label='Ver libro: ' + ${libro.titulo}">Ver libro <span aria-hidden="true">↗</span></a></div></div>
+</article>
+<nav th:fragment="adminNav" class="admin-tools" aria-label="Herramientas de administración">
+  <a data-nav="/admin/gestion" th:href="@{/admin/gestion}"><i class="bi bi-grid" aria-hidden="true"></i> Registros y reportes</a>
+  <a data-nav="/admin/libros" th:href="@{/admin/libros/nuevo}"><i class="bi bi-plus" aria-hidden="true"></i> Agregar libro</a>
+  <a data-nav="/admin/colecciones" th:href="@{/admin/colecciones}"><i class="bi bi-collection" aria-hidden="true"></i> Organizar colecciones</a>
+  <a data-nav="/admin/catalogo" th:href="@{/admin/catalogo/resumen}"><i class="bi bi-bar-chart" aria-hidden="true"></i> Resumen del catálogo</a>
+</nav>
+<footer th:fragment="pie" class="site-footer"><div class="shell footer-inner"><a th:replace="~{fragments :: marca}"></a><p>Historias que acompañan.<br>Ideas que abren caminos.</p><div class="footer-links"><a th:href="@{/libros}">Explorar el catálogo ↗</a><span>PDF · EPUB · MOBI</span></div></div><div class="shell footer-bottom"><span>Biblioteca UTS · Biblioteca digital</span><span>Tu próxima lectura empieza aquí.</span></div></footer>
+</body></html>

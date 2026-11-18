@@ -39,4 +39,5 @@ public class BibliotecaFacade {
     public ResponseEntity<Resource> leer(long userId,long bookId,String formato,String modo) throws IOException {
         return lectura.entregar(userId,bookId,formato,modo);
     }
+    public void validarLectura(long userId,long bookId) { lectura.validarAcceso(userId,bookId); }
 }

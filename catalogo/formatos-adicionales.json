@@ -1,0 +1,284 @@
+{
+  "archivos": [
+    {
+      "archivo": "2000.pdf",
+      "formato": "PDF",
+      "epubSha256": "5c1cf9565d53af5a9a2b80b5997bf774237e5db747a0f357738a4ae1bfea49ab",
+      "sha256": "c3b75774373cb27f2685a10e5b0ed8d36eadb032ef8c8b1a378b0e39e987a113",
+      "gutenbergId": 2000
+    },
+    {
+      "archivo": "2000.mobi",
+      "formato": "MOBI",
+      "epubSha256": "5c1cf9565d53af5a9a2b80b5997bf774237e5db747a0f357738a4ae1bfea49ab",
+      "sha256": "fb971fb7139bc45df4568c1ddab6910cd7f732a5c0cefaec7f6235ba06e4a540",
+      "gutenbergId": 2000
+    },
+    {
+      "archivo": "10822.pdf",
+      "formato": "PDF",
+      "epubSha256": "1f0c8721875f61177b5662a8e0467fc4e1ed24f63f0459a7995b71e9b6a264b0",
+      "sha256": "5261e99a7fc7e5753f3c807dac35d948f1f7646c81e6659821e73ef0bb8bed63",
+      "gutenbergId": 10822
+    },
+    {
+      "archivo": "10822.mobi",
+      "formato": "MOBI",
+      "epubSha256": "1f0c8721875f61177b5662a8e0467fc4e1ed24f63f0459a7995b71e9b6a264b0",
+      "sha256": "fd2c804e5950876b7edb47dd51cbe2a51afdc987ea543242d353468615f61813",
+      "gutenbergId": 10822
+    },
+    {
+      "archivo": "10825.pdf",
+      "formato": "PDF",
+      "epubSha256": "513ecaba13f5df9a2d88c85bb905a0b313b31c0be61759f3ebe2cca1f99e3535",
+      "sha256": "73e5ff72e173ff2aa0ca4f8d8316062450a6e7762add386dcc93b0185cc1df2a",
+      "gutenbergId": 10825
+    },
+    {
+      "archivo": "10825.mobi",
+      "formato": "MOBI",
+      "epubSha256": "513ecaba13f5df9a2d88c85bb905a0b313b31c0be61759f3ebe2cca1f99e3535",
+      "sha256": "fbd8e814bb9c36cdf9fb07c6b38df3613cb0d7312f7fc8ec146891aab0016f09",
+      "gutenbergId": 10825
+    },
+    {
+      "archivo": "11070.pdf",
+      "formato": "PDF",
+      "epubSha256": "4e9abc1365e2722153df5cc074137a1d3ca3fd0d29fa57a3a1ca4b2069947714",
+      "sha256": "5af925b3186f48991660f8e881b4e703aa27bacf179278e74e21d5c7802cc959",
+      "gutenbergId": 11070
+    },
+    {
+      "archivo": "11070.mobi",
+      "formato": "MOBI",
+      "epubSha256": "4e9abc1365e2722153df5cc074137a1d3ca3fd0d29fa57a3a1ca4b2069947714",
+      "sha256": "e5829c62e136c946c05afc8c1f49c34a0e5ecd8816ba7f4ef128ddf43dd8a20d",
+      "gutenbergId": 11070
+    },
+    {
+      "archivo": "12627.pdf",
+      "formato": "PDF",
+      "epubSha256": "be53edb7dd2be4d0aa37a61c6005c867f869c517db648d3a4ca145ca8fd1ef1e",
+      "sha256": "0a0d13a6c7e0d45f19725b2194ec83309d1e02962549912f5a62d350a6399097",
+      "gutenbergId": 12627
+    },
+    {
+      "archivo": "12627.mobi",
+      "formato": "MOBI",
+      "epubSha256": "be53edb7dd2be4d0aa37a61c6005c867f869c517db648d3a4ca145ca8fd1ef1e",
+      "sha256": "4dbddff92c1bae0ccdbe6a8e55deb34d58b9a47709668926138f18334d7e5dea",
+      "gutenbergId": 12627
+    },
+    {
+      "archivo": "13210.pdf",
+      "formato": "PDF",
+      "epubSha256": "56c842aecbb2392074f8418339cef64d0404b25ae738876180e90553b460c659",
+      "sha256": "1134f6b33d9e06a52adf9a2eba6c09b731b6a013aa09f5441d03688a1a9b34d8",
+      "gutenbergId": 13210
+    },
+    {
+      "archivo": "13210.mobi",
+      "formato": "MOBI",
+      "epubSha256": "56c842aecbb2392074f8418339cef64d0404b25ae738876180e90553b460c659",
+      "sha256": "1de2930c812d54f933fcad26dbd1af37882a7f0f88f43753216b1f24f09174e2",
+      "gutenbergId": 13210
+    },
+    {
+      "archivo": "13519.pdf",
+      "formato": "PDF",
+      "epubSha256": "8265eef7a063151628ac19f62f38b89796880ef9aeaa256d27522ff772f393d2",
+      "sha256": "180da81417f36f63a217494c7fac9dcd4ed53f2f0ca87ea6e86612a2a207ed7a",
+      "gutenbergId": 13519
+    },
+    {
+      "archivo": "13519.mobi",
+      "formato": "MOBI",
+      "epubSha256": "8265eef7a063151628ac19f62f38b89796880ef9aeaa256d27522ff772f393d2",
+      "sha256": "cb67b19fce7b24a33cdd132c96ab56f6f3a8aa8e481c522d842d2148085b098c",
+      "gutenbergId": 13519
+    },
+    {
+      "archivo": "14308.pdf",
+      "formato": "PDF",
+      "epubSha256": "72ece1719b3855018a3ff72ec588dd2cd8a845cb54414e738b01c56ddc8e767e",
+      "sha256": "e0b9d73b7f54cac3f899d87f910fbaabcf514658fef82e49b311a95cd79354ca",
+      "gutenbergId": 14308
+    },
+    {
+      "archivo": "14308.mobi",
+      "formato": "MOBI",
+      "epubSha256": "72ece1719b3855018a3ff72ec588dd2cd8a845cb54414e738b01c56ddc8e767e",
+      "sha256": "6b19ab4dba22d974e36be81c873aeaaa5ec2c2a86d5e2e68b526e5569dfbc830",
+      "gutenbergId": 14308
+    },
+    {
+      "archivo": "14311.pdf",
+      "formato": "PDF",
+      "epubSha256": "51bb7ff9865e5094aec311cb743c82c9da5834b638923d16c6bbbfbe4c332427",
+      "sha256": "481e784fd4561df14e46a1752da6ac3922b483a52b21e8c150496735e42f482e",
+      "gutenbergId": 14311
+    },
+    {
+      "archivo": "14311.mobi",
+      "formato": "MOBI",
+      "epubSha256": "51bb7ff9865e5094aec311cb743c82c9da5834b638923d16c6bbbfbe4c332427",
+      "sha256": "ac7e48e3df99737d7950d7fde7dd5127e2ef12efad97b9fad7e57d707feb3ae4",
+      "gutenbergId": 14311
+    },
+    {
+      "archivo": "14944.pdf",
+      "formato": "PDF",
+      "epubSha256": "1bc33843a6b6a39b9f7340f8a80d1588ecf2863d0e624401483564b3fdfed852",
+      "sha256": "f29253288052615acf326daac7578a4af0968d5cbf937827f15cebd8ca6cca6e",
+      "gutenbergId": 14944
+    },
+    {
+      "archivo": "14944.mobi",
+      "formato": "MOBI",
+      "epubSha256": "1bc33843a6b6a39b9f7340f8a80d1588ecf2863d0e624401483564b3fdfed852",
+      "sha256": "df9352bd18494b02302d68094fb22bbe395fc2f4fcd2490cb62d67e15a741480",
+      "gutenbergId": 14944
+    },
+    {
+      "archivo": "14995.pdf",
+      "formato": "PDF",
+      "epubSha256": "1c3ce768bd846f7b85b64469e139aef250b0f1d5194dd83a6ab75829c7a55482",
+      "sha256": "8b6487e231d6788cd2bb5d29b3add410aa3d1f03b3bed23867fbeba0334ba7c7",
+      "gutenbergId": 14995
+    },
+    {
+      "archivo": "14995.mobi",
+      "formato": "MOBI",
+      "epubSha256": "1c3ce768bd846f7b85b64469e139aef250b0f1d5194dd83a6ab75829c7a55482",
+      "sha256": "6fdf898df1011dfe2f296e09ba6bf2b1d1965dc7e33b3a6a04fa67a87035edb4",
+      "gutenbergId": 14995
+    },
+    {
+      "archivo": "15115.pdf",
+      "formato": "PDF",
+      "epubSha256": "25ab1bb22e1ca04eba1775d07c926a673028f3b1844683ee1689061595fc95db",
+      "sha256": "857e2dc7da7d710836cc297b57a568084b9b6fc51072a4d49aad647f99c35313",
+      "gutenbergId": 15115
+    },
+    {
+      "archivo": "15115.mobi",
+      "formato": "MOBI",
+      "epubSha256": "25ab1bb22e1ca04eba1775d07c926a673028f3b1844683ee1689061595fc95db",
+      "sha256": "b2e88a825a1463b989795e8be10accabf606fd0e7b60fad7f27b0e437fe0f121",
+      "gutenbergId": 15115
+    },
+    {
+      "archivo": "15206.pdf",
+      "formato": "PDF",
+      "epubSha256": "92e08396e1c92d01f81e4c545284a2d079437317653e1b3ec7fc3c07d96c87ff",
+      "sha256": "0675828995ccbfb5981347221d5798067d789cb2bac314be2c5edfc5239971e2",
+      "gutenbergId": 15206
+    },
+    {
+      "archivo": "15206.mobi",
+      "formato": "MOBI",
+      "epubSha256": "92e08396e1c92d01f81e4c545284a2d079437317653e1b3ec7fc3c07d96c87ff",
+      "sha256": "b550907300ca563432a067925257001861dd971ba7e6c1f97a07f3fd1e00bfeb",
+      "gutenbergId": 15206
+    },
+    {
+      "archivo": "16110.pdf",
+      "formato": "PDF",
+      "epubSha256": "672cc7f7afe0519b2d0b3579c52e946974731a23e38cb2a9a93bc32f4ebe78f3",
+      "sha256": "3d171fc867fd893bfe40e6e2bb975d1a23e1e2c069265c58035f239f643adcfb",
+      "gutenbergId": 16110
+    },
+    {
+      "archivo": "16110.mobi",
+      "formato": "MOBI",
+      "epubSha256": "672cc7f7afe0519b2d0b3579c52e946974731a23e38cb2a9a93bc32f4ebe78f3",
+      "sha256": "5c1ae7ff00b0f45954fe4648287ef93d6173eac963eff920f5a56290904d1739",
+      "gutenbergId": 16110
+    },
+    {
+      "archivo": "16413.pdf",
+      "formato": "PDF",
+      "epubSha256": "d75c8629d07688dcab5fa85edb4b102f837cc8875c043589c5196fbf1f8aa371",
+      "sha256": "a2be588aae8ac1fff316223dea36a53eade3d19246fcb872cc78b8c995a4c45a",
+      "gutenbergId": 16413
+    },
+    {
+      "archivo": "16413.mobi",
+      "formato": "MOBI",
+      "epubSha256": "d75c8629d07688dcab5fa85edb4b102f837cc8875c043589c5196fbf1f8aa371",
+      "sha256": "5211987773ca416d27562bda8a47d429d2eb0486b8173a0ac30889ae5ba7237a",
+      "gutenbergId": 16413
+    },
+    {
+      "archivo": "16484.pdf",
+      "formato": "PDF",
+      "epubSha256": "23bccc0dcadae5bcb7920f7529e3737e35d5dd80fb305f3ca75e509fbdab5d98",
+      "sha256": "b0828b75d7353800a51e626133ab3ed0746f78431891f09c1db427fe9385e639",
+      "gutenbergId": 16484
+    },
+    {
+      "archivo": "16484.mobi",
+      "formato": "MOBI",
+      "epubSha256": "23bccc0dcadae5bcb7920f7529e3737e35d5dd80fb305f3ca75e509fbdab5d98",
+      "sha256": "1badc3248e7f886b992e8ed51c1dea390efce4d994eefcb1cfc81cc4307d4366",
+      "gutenbergId": 16484
+    },
+    {
+      "archivo": "16670.pdf",
+      "formato": "PDF",
+      "epubSha256": "6c4283c1ecfff0ddcb0fd6684bded9e2536d96ba5e60c32bce25fd2cbe7ffffb",
+      "sha256": "99d239d8b3069ec1c4ed8ab2f32d0cb37736225d76ee83bd90dfa75cd4073376",
+      "gutenbergId": 16670
+    },
+    {
+      "archivo": "16670.mobi",
+      "formato": "MOBI",
+      "epubSha256": "6c4283c1ecfff0ddcb0fd6684bded9e2536d96ba5e60c32bce25fd2cbe7ffffb",
+      "sha256": "f2f612ee36a94b7f097b5679e597848fb9cbd33da146b65e2f587dd9a4e150b9",
+      "gutenbergId": 16670
+    },
+    {
+      "archivo": "16961.pdf",
+      "formato": "PDF",
+      "epubSha256": "4f793b29a0be640d6df1e4ccab1ec3a304d0687763d5b66ab4c8ad6cf93be4ee",
+      "sha256": "d27002b0ba67ba73c1c6aa7422db9073c9b9b48692063dad1e434e7ae15c9e65",
+      "gutenbergId": 16961
+    },
+    {
+      "archivo": "16961.mobi",
+      "formato": "MOBI",
+      "epubSha256": "4f793b29a0be640d6df1e4ccab1ec3a304d0687763d5b66ab4c8ad6cf93be4ee",
+      "sha256": "3b127ba4f3eaa2ed12a1e2ec66b848470300c027f0286e6a58a6e03b650c5fd4",
+      "gutenbergId": 16961
+    },
+    {
+      "archivo": "17013.pdf",
+      "formato": "PDF",
+      "epubSha256": "ab02bedfee00a9e3691567882ec10461232ec9059de68e29c3faa602f0487b8d",
+      "sha256": "3da0833458c4efe53af6dce277fc47dfe56d716c5296d8a53a20915e087466a6",
+      "gutenbergId": 17013
+    },
+    {
+      "archivo": "17013.mobi",
+      "formato": "MOBI",
+      "epubSha256": "ab02bedfee00a9e3691567882ec10461232ec9059de68e29c3faa602f0487b8d",
+      "sha256": "dbc1fbf7d464da7b9f0cf1b9b8835ff21ac3727c29400d9517b40626eba9c8ce",
+      "gutenbergId": 17013
+    },
+    {
+      "archivo": "17073.pdf",
+      "formato": "PDF",
+      "epubSha256": "a19b573c474aab66cd65c8ec260803b58de59515dec7511a3888374a9dcce703",
+      "sha256": "9f43cfb5da269b73b746c8d9d7d912269c77189409e0c4c537e35a8ddda5ca98",
+      "gutenbergId": 17073
+    },
+    {
+      "archivo": "17073.mobi",
+      "formato": "MOBI",
+      "epubSha256": "a19b573c474aab66cd65c8ec260803b58de59515dec7511a3888374a9dcce703",
+      "sha256": "0bb2ca40dfc18868bedb0219eaeb4dc02fb84512bc6418fa0f2924536c6e2d8d",
+      "gutenbergId": 17073
+    }
+  ]
+}

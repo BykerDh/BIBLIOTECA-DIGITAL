@@ -1,6 +1,7 @@
 package com.biblioteca.repository;
 
 import com.biblioteca.domain.Models.*;
+import com.biblioteca.patterns.behavioral.state.CicloPrestamo;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -62,12 +63,18 @@ public class BibliotecaRepository {
         jdbc.update("INSERT INTO suscripciones(usuario_id,plan_codigo,inicia_en,vence_en) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE plan_codigo=VALUES(plan_codigo),inicia_en=VALUES(inicia_en),vence_en=VALUES(vence_en)",usuarioId,codigo,Timestamp.valueOf(inicio),Timestamp.valueOf(fin));
     }
     public List<Libro> libros(String termino,int limite,int desplazamiento) {
+        return libros(termino,limite,desplazamiento,false);
+    }
+    public List<Libro> libros(String termino,int limite,int desplazamiento,boolean completos) {
         String q="%"+termino.trim().toLowerCase()+"%";
-        return jdbc.query("SELECT * FROM libros WHERE activo=TRUE AND (LOWER(titulo) LIKE ? OR LOWER(autor) LIKE ? OR LOWER(genero) LIKE ?) ORDER BY titulo,id LIMIT ? OFFSET ?", LIBRO,q,q,q,limite,desplazamiento);
+        return jdbc.query("SELECT * FROM libros l WHERE activo=TRUE AND (LOWER(titulo) LIKE ? OR LOWER(autor) LIKE ? OR LOWER(genero) LIKE ?) AND (?=FALSE OR (SELECT COUNT(*) FROM archivos_libro a WHERE a.libro_id=l.id AND a.formato IN ('PDF','EPUB','MOBI'))=3) ORDER BY titulo,id LIMIT ? OFFSET ?", LIBRO,q,q,q,completos,limite,desplazamiento);
     }
     public int totalLibros(String termino) {
+        return totalLibros(termino,false);
+    }
+    public int totalLibros(String termino,boolean completos) {
         String q="%"+termino.trim().toLowerCase()+"%";
-        return jdbc.queryForObject("SELECT COUNT(*) FROM libros WHERE activo=TRUE AND (LOWER(titulo) LIKE ? OR LOWER(autor) LIKE ? OR LOWER(genero) LIKE ?)",Integer.class,q,q,q);
+        return jdbc.queryForObject("SELECT COUNT(*) FROM libros l WHERE activo=TRUE AND (LOWER(titulo) LIKE ? OR LOWER(autor) LIKE ? OR LOWER(genero) LIKE ?) AND (?=FALSE OR (SELECT COUNT(*) FROM archivos_libro a WHERE a.libro_id=l.id AND a.formato IN ('PDF','EPUB','MOBI'))=3)",Integer.class,q,q,q,completos);
     }
     public Libro libro(long id) {
         return jdbc.query("SELECT * FROM libros WHERE id=? AND activo=TRUE", LIBRO,id).stream().findFirst().orElseThrow(() -> new IllegalArgumentException("Libro no encontrado"));
@@ -108,9 +115,9 @@ public class BibliotecaRepository {
         jdbc.update("INSERT INTO fuentes_libro(libro_id,proveedor,identificador_externo,fuente_url,derechos,sha256) VALUES(?,?,?,?,?,?)",
                 fuente.libroId(),fuente.proveedor(),fuente.identificadorExterno(),fuente.fuenteUrl(),fuente.derechos(),fuente.sha256());
     }
-    public int prestamosActivosLibro(long libroId) { return jdbc.queryForObject("SELECT COUNT(*) FROM prestamos WHERE libro_id=? AND devuelto_en IS NULL",Integer.class,libroId); }
-    public int prestamosActivosUsuario(long usuarioId) { return jdbc.queryForObject("SELECT COUNT(*) FROM prestamos WHERE usuario_id=? AND devuelto_en IS NULL",Integer.class,usuarioId); }
-    public boolean yaPrestado(long usuarioId,long libroId) { return jdbc.queryForObject("SELECT COUNT(*) FROM prestamos WHERE usuario_id=? AND libro_id=? AND devuelto_en IS NULL",Integer.class,usuarioId,libroId)>0; }
+    public int prestamosActivosLibro(long libroId) { return jdbc.queryForObject("SELECT COUNT(*) FROM prestamos WHERE libro_id=? AND devuelto_en IS NULL AND vence_en>CURRENT_TIMESTAMP",Integer.class,libroId); }
+    public int prestamosActivosUsuario(long usuarioId) { return jdbc.queryForObject("SELECT COUNT(*) FROM prestamos WHERE usuario_id=? AND devuelto_en IS NULL AND vence_en>CURRENT_TIMESTAMP",Integer.class,usuarioId); }
+    public boolean yaPrestado(long usuarioId,long libroId) { return jdbc.queryForObject("SELECT COUNT(*) FROM prestamos WHERE usuario_id=? AND libro_id=? AND devuelto_en IS NULL AND vence_en>CURRENT_TIMESTAMP",Integer.class,usuarioId,libroId)>0; }
     public long crearPrestamo(long usuarioId,long libroId,LocalDateTime inicio,LocalDateTime fin) {
         return insert("INSERT INTO prestamos(usuario_id,libro_id,prestado_en,vence_en) VALUES(?,?,?,?)",usuarioId,libroId,Timestamp.valueOf(inicio),Timestamp.valueOf(fin));
     }
@@ -120,7 +127,25 @@ public class BibliotecaRepository {
     public List<Prestamo> prestamosUsuario(long userId) { return jdbc.query("SELECT * FROM prestamos WHERE usuario_id=? ORDER BY prestado_en DESC LIMIT 100",PRESTAMO,userId); }
     public void devolver(long id) { jdbc.update("UPDATE prestamos SET devuelto_en=? WHERE id=? AND devuelto_en IS NULL",Timestamp.valueOf(LocalDateTime.now()),id); }
     public boolean tienePrestamo(long userId,long bookId) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM prestamos WHERE usuario_id=? AND libro_id=? AND devuelto_en IS NULL AND vence_en>?",Integer.class,userId,bookId,Timestamp.valueOf(LocalDateTime.now()))>0;
+        return jdbc.query("SELECT * FROM prestamos WHERE usuario_id=? AND libro_id=? ORDER BY id DESC LIMIT 1",PRESTAMO,userId,bookId)
+                .stream().anyMatch(p -> new CicloPrestamo(p,LocalDateTime.now()).permiteLectura());
+    }
+    public List<Prestamo> vencidosPendientes(int limite) {
+        return jdbc.query("SELECT * FROM prestamos WHERE vencimiento_procesado=FALSE AND devuelto_en IS NULL AND vence_en<=CURRENT_TIMESTAMP ORDER BY vence_en,id LIMIT ?",PRESTAMO,limite);
+    }
+    public void bloquearCirculacionHistorica(long usuarioId,long libroId) {
+        jdbc.queryForList("SELECT id FROM usuarios WHERE id=? FOR UPDATE",Long.class,usuarioId);
+        jdbc.queryForList("SELECT id FROM libros WHERE id=? FOR UPDATE",Long.class,libroId);
+    }
+    public boolean marcarVencimiento(long id) {
+        return jdbc.update("UPDATE prestamos SET vencimiento_procesado=TRUE WHERE id=? AND vencimiento_procesado=FALSE AND devuelto_en IS NULL AND vence_en<=CURRENT_TIMESTAMP",id)==1;
+    }
+    public boolean libroActivo(long id) { return jdbc.queryForObject("SELECT COUNT(*) FROM libros WHERE id=? AND activo=TRUE",Integer.class,id)>0; }
+    public List<Libro> librosActivos() { return jdbc.query("SELECT * FROM libros WHERE activo=TRUE ORDER BY titulo,id",LIBRO); }
+    public List<Archivo> archivosCatalogo() { return jdbc.query("SELECT a.* FROM archivos_libro a JOIN libros l ON l.id=a.libro_id WHERE l.activo=TRUE",ARCHIVO); }
+    public record Asignacion(long coleccionId,long libroId) {}
+    public List<Asignacion> asignaciones() {
+        return jdbc.query("SELECT coleccion_id,libro_id FROM coleccion_libros ORDER BY coleccion_id,libro_id",(r,n)->new Asignacion(r.getLong(1),r.getLong(2)));
     }
     public int reservasPendientesUsuario(long id) { return jdbc.queryForObject("SELECT COUNT(*) FROM reservas WHERE usuario_id=? AND estado='PENDIENTE'",Integer.class,id); }
     public boolean yaReservado(long userId,long bookId) { return jdbc.queryForObject("SELECT COUNT(*) FROM reservas WHERE usuario_id=? AND libro_id=? AND estado='PENDIENTE'",Integer.class,userId,bookId)>0; }
@@ -139,12 +164,19 @@ public class BibliotecaRepository {
     public Optional<String> generoFavorito(long userId) { return jdbc.queryForList("SELECT l.genero FROM libros l JOIN prestamos p ON p.libro_id=l.id WHERE p.usuario_id=? GROUP BY l.genero ORDER BY COUNT(*) DESC LIMIT 1",String.class,userId).stream().findFirst(); }
     public Optional<String> generoMejorValorado(long userId) { return jdbc.queryForList("SELECT l.genero FROM libros l JOIN valoraciones v ON v.libro_id=l.id WHERE v.usuario_id=? GROUP BY l.genero ORDER BY SUM(v.puntos) DESC LIMIT 1",String.class,userId).stream().findFirst(); }
     public Optional<String> ultimaBusqueda(long userId) { return jdbc.queryForList("SELECT termino FROM busquedas WHERE usuario_id=? ORDER BY creada_en DESC LIMIT 1",String.class,userId).stream().findFirst(); }
+    public void guardarRecomendaciones(long userId,List<Libro> libros) {
+        // Conserva el ultimo resultado realmente calculado para cada usuario; no inventa recomendaciones.
+        List<Long> anteriores=jdbc.queryForList("SELECT libro_id FROM recomendaciones_usuario WHERE usuario_id=? ORDER BY posicion",Long.class,userId);
+        if (anteriores.equals(libros.stream().map(Libro::id).toList())) return;
+        jdbc.update("DELETE FROM recomendaciones_usuario WHERE usuario_id=?",userId);
+        LocalDateTime fecha=LocalDateTime.now();
+        for (int i=0;i<libros.size();i++) jdbc.update("INSERT INTO recomendaciones_usuario(usuario_id,libro_id,posicion,generada_en) VALUES(?,?,?,?)",userId,libros.get(i).id(),i+1,Timestamp.valueOf(fecha));
+    }
     public List<Libro> recomendar(long userId,String genero,String termino,boolean completo) {
         return jdbc.query("SELECT l.* FROM libros l WHERE l.activo=TRUE AND (? OR l.acceso_minimo='BASICO') AND NOT EXISTS (SELECT 1 FROM prestamos p WHERE p.usuario_id=? AND p.libro_id=l.id) ORDER BY (CASE WHEN l.genero=? THEN 4 ELSE 0 END + CASE WHEN LOWER(l.titulo) LIKE ? OR LOWER(l.autor) LIKE ? THEN 2 ELSE 0 END + COALESCE((SELECT AVG(v.puntos) FROM valoraciones v WHERE v.libro_id=l.id),0)) DESC,l.creado_en DESC LIMIT 12",LIBRO,completo,userId,genero,"%"+termino.toLowerCase()+"%","%"+termino.toLowerCase()+"%");
     }
     public List<Coleccion> colecciones() { return jdbc.query("SELECT * FROM colecciones ORDER BY nombre",COLECCION); }
     public long crearColeccion(String nombre,Long padreId) { return insert("INSERT INTO colecciones(nombre,padre_id) VALUES(?,?)",nombre,padreId); }
     public void agregarColeccionLibro(long collectionId,long bookId) { jdbc.update("INSERT IGNORE INTO coleccion_libros(coleccion_id,libro_id) VALUES(?,?)",collectionId,bookId); }
-    public List<Long> idsLibrosColeccion(long collectionId) { return jdbc.queryForList("SELECT libro_id FROM coleccion_libros WHERE coleccion_id=?",Long.class,collectionId); }
     public void auditar(Long userId,String accion,String entidad,Long entityId) { jdbc.update("INSERT INTO auditoria(usuario_id,accion,entidad,entidad_id,fecha) VALUES(?,?,?,?,?)",userId,accion,entidad,entityId,Timestamp.valueOf(LocalDateTime.now())); }
 }

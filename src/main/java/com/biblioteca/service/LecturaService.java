@@ -22,6 +22,10 @@ public class LecturaService {
     public LecturaService(BibliotecaRepository repo,CatalogoService catalogo,SuscripcionService suscripciones) {
         this.repo=repo; this.catalogo=catalogo; this.suscripciones=suscripciones;
     }
+    public void validarAcceso(long userId,long bookId) {
+        suscripciones.validarAcceso(userId,catalogo.libro(bookId));
+        if (!repo.tienePrestamo(userId,bookId)) throw new IllegalStateException("Necesitas un prestamo vigente para leer este libro");
+    }
     @Transactional
     public ResponseEntity<Resource> entregar(long userId,long bookId,String formato,String modo) throws IOException {
         String f=formato.trim().toUpperCase(Locale.ROOT);
@@ -31,10 +35,8 @@ public class LecturaService {
         // El proxy pospone la consulta del archivo hasta que el decorador autoriza el acceso.
         EntregaContenido diferida=new EntregaLibroProxy(() -> catalogo.contenido(bookId,f));
         EntregaContenido entrega=new EntregaContenido.EntregaAuditada(
-                new EntregaContenido.EntregaProtegida(diferida,() -> {
-                    suscripciones.validarAcceso(userId,catalogo.libro(bookId));
-                    if (!repo.tienePrestamo(userId,bookId)) throw new IllegalStateException("Necesitas un prestamo vigente para leer este libro");
-                }),() -> repo.auditar(userId,"LECTURA_"+m,"LIBRO",bookId));
+                new EntregaContenido.EntregaProtegida(diferida,() -> validarAcceso(userId,bookId)),
+                () -> repo.auditar(userId,"LECTURA_"+m,"LIBRO",bookId));
         ContenidoLibro contenido=entrega.entregar();
         return ResponseEntity.ok().contentType(sesion.tipoContenido())
                 .header(HttpHeaders.CONTENT_DISPOSITION,sesion.disposicion(contenido.metadatos().nombreOriginal()).toString())

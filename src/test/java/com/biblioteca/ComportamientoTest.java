@@ -6,6 +6,8 @@ import com.biblioteca.domain.Models.*;
 import com.biblioteca.patterns.behavioral.iterator.RecorridoColeccion;
 import com.biblioteca.patterns.behavioral.mediator.CoordinadorDisponibilidad;
 import com.biblioteca.patterns.behavioral.memento.FichaEditable;
+import com.biblioteca.patterns.behavioral.observer.EventoCirculacion;
+import com.biblioteca.patterns.behavioral.observer.PublicadorCirculacion;
 import com.biblioteca.patterns.structural.composite.ComponenteCatalogo.*;
 import com.biblioteca.repository.BibliotecaRepository;
 import com.biblioteca.service.*;
@@ -75,15 +77,16 @@ class ComportamientoTest {
         verify(repo,never()).notificar(anyLong(),anyString());
     }
     @Test void devolucionNotificaDespuesDeLiberarPrestamo() {
-        var repo=mock(BibliotecaRepository.class);var mediator=mock(com.biblioteca.patterns.behavioral.mediator.MediadorCirculacion.class);
+        var repo=mock(BibliotecaRepository.class);var eventos=mock(PublicadorCirculacion.class);
         when(repo.prestamo(2)).thenReturn(new Prestamo(2,4,9,LocalDateTime.now(),LocalDateTime.now().plusDays(7),null));
-        new PrestamoReservaService(repo,mock(SuscripcionService.class),mediator).devolver(4,2);
-        var orden=inOrder(repo,mediator);orden.verify(repo).devolver(2);orden.verify(mediator).disponibilidadCambiada(9);
+        new PrestamoReservaService(repo,mock(SuscripcionService.class),eventos).devolver(4,2);
+        var orden=inOrder(repo,eventos);orden.verify(repo).devolver(2);
+        orden.verify(eventos).publicar(new EventoCirculacion(EventoCirculacion.Tipo.DEVOLUCION,4,9,2));
     }
     @Test void devolucionAjenaNoAvisa() {
-        var repo=mock(BibliotecaRepository.class);var mediator=mock(com.biblioteca.patterns.behavioral.mediator.MediadorCirculacion.class);
+        var repo=mock(BibliotecaRepository.class);var eventos=mock(PublicadorCirculacion.class);
         when(repo.prestamo(2)).thenReturn(new Prestamo(2,8,9,LocalDateTime.now(),LocalDateTime.now().plusDays(7),null));
-        assertThrows(IllegalArgumentException.class,()->new PrestamoReservaService(repo,mock(SuscripcionService.class),mediator).devolver(4,2));
-        verifyNoInteractions(mediator);verify(repo,never()).devolver(anyLong());
+        assertThrows(IllegalArgumentException.class,()->new PrestamoReservaService(repo,mock(SuscripcionService.class),eventos).devolver(4,2));
+        verifyNoInteractions(eventos);verify(repo,never()).devolver(anyLong());
     }
 }

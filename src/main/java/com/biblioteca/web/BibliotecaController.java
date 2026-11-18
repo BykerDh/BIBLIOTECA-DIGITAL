@@ -7,6 +7,9 @@ import com.biblioteca.service.CatalogoService;
 import com.biblioteca.service.RecomendacionService;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Locale;
+import jakarta.servlet.http.HttpServletResponse;
+import com.biblioteca.patterns.creational.factorymethod.LectorFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -36,12 +39,13 @@ public class BibliotecaController {
         return "index";
     }
     @GetMapping("/libros")
-    public String libros(@RequestParam(defaultValue="") String q,@RequestParam(defaultValue="0") int pagina,Principal principal,Model model) {
+    public String libros(@RequestParam(defaultValue="") String q,@RequestParam(defaultValue="0") int pagina,@RequestParam(defaultValue="false") boolean completos,Principal principal,Model model) {
         if (q.length()>200) throw new IllegalArgumentException("La busqueda supera los 200 caracteres");
         int p=Math.max(0,pagina);
         Usuario u=usuario(principal);
-        model.addAttribute("libros",biblioteca.buscar(q,p));
-        model.addAttribute("total",biblioteca.total(q));
+        model.addAttribute("libros",catalogo.buscar(q,p,completos));
+        model.addAttribute("total",catalogo.total(q,completos));
+        model.addAttribute("completos",completos);
         model.addAttribute("pagina",p);
         model.addAttribute("q",q);
         model.addAttribute("usuario",u);
@@ -51,11 +55,17 @@ public class BibliotecaController {
     @GetMapping("/libros/{id}")
     public String detalle(@PathVariable long id,Principal principal,Model model) {
         Libro libro=biblioteca.libro(id);
+        Usuario u=usuario(principal);
+        int disponibles=biblioteca.disponibles(libro);
+        var primera=repo.primeraReserva(id);
+        boolean prestado=repo.yaPrestado(u.id(),id);
         model.addAttribute("libro",libro);
         model.addAttribute("archivos",biblioteca.archivos(id));
         model.addAttribute("fuente",repo.fuente(id).orElse(null));
-        model.addAttribute("disponibles",biblioteca.disponibles(libro));
-        model.addAttribute("usuario",usuario(principal));
+        model.addAttribute("disponibles",disponibles);
+        model.addAttribute("puedePrestar",!prestado && disponibles>0 && (primera.isEmpty() || primera.get().usuarioId()==u.id()));
+        model.addAttribute("puedeReservar",!prestado && !repo.yaReservado(u.id(),id) && (disponibles==0 || primera.isPresent()));
+        model.addAttribute("usuario",u);
         return "libro";
     }
     @PostMapping("/libros/{id}/prestar")
@@ -77,6 +87,17 @@ public class BibliotecaController {
     public String valorar(@PathVariable long id,@RequestParam int puntos,Principal principal) {
         recomendaciones.valorar(usuario(principal).id(),id,puntos);
         return "redirect:/libros/"+id+"?valorado";
+    }
+    @GetMapping("/libros/{id}/leer/{formato}")
+    public String lector(@PathVariable long id,@PathVariable String formato,Principal principal,Model model,HttpServletResponse response) {
+        String f=formato.toUpperCase(Locale.ROOT);LectorFactory.para(f);
+        biblioteca.validarLectura(usuario(principal).id(),id);
+        repo.archivo(id,f);
+        model.addAttribute("libro",biblioteca.libro(id));model.addAttribute("formato",f);
+        response.setHeader("Cache-Control","private, no-store");
+        // Los libros no pueden ejecutar scripts incrustados ni cargar recursos desde sitios externos.
+        response.setHeader("Content-Security-Policy","default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' blob:; img-src 'self' data: blob:; font-src 'self' data: blob:; frame-src 'self' blob:; connect-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'");
+        return "lector";
     }
     @GetMapping("/mi-cuenta")
     public String cuenta(Principal principal,Model model) {

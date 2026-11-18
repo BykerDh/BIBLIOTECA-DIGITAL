@@ -4,6 +4,7 @@ import com.biblioteca.domain.Models.*;
 import com.biblioteca.patterns.behavioral.iterator.RecorridoColeccion;
 import com.biblioteca.patterns.behavioral.memento.FichaEditable;
 import com.biblioteca.patterns.behavioral.memento.HistorialFicha;
+import com.biblioteca.patterns.behavioral.visitor.InformeCatalogoVisitor;
 import com.biblioteca.patterns.creational.builder.FichaLibro;
 import com.biblioteca.patterns.creational.prototype.PlantillaLibroDigital;
 import com.biblioteca.patterns.creational.singleton.ConfiguracionBiblioteca;
@@ -42,6 +43,8 @@ public class CatalogoService {
     }
     public List<Libro> buscar(String texto,int pagina) { return repo.libros(texto,20,Math.max(0,pagina)*20); }
     public int total(String texto) { return repo.totalLibros(texto); }
+    public List<Libro> buscar(String texto,int pagina,boolean completos) { return repo.libros(texto,20,Math.max(0,pagina)*20,completos); }
+    public int total(String texto,boolean completos) { return repo.totalLibros(texto,completos); }
     public Libro libro(long id) { return repo.libro(id); }
     public List<Archivo> archivos(long id) { return repo.archivos(id); }
     public List<Coleccion> colecciones() { return repo.colecciones(); }
@@ -192,7 +195,26 @@ public class CatalogoService {
         if (repo.colecciones().stream().noneMatch(c -> c.id()==coleccionId)) throw new IllegalArgumentException("Coleccion no encontrada");
         repo.agregarColeccionLibro(coleccionId,libroId);
     }
+    @Transactional(readOnly=true)
     public List<ColeccionNodo> arbolColecciones() {
+        return construirArbol(fichasActivas());
+    }
+    private Map<Long,Libro> fichasActivas() {
+        Map<Long,Libro> libros=new java.util.LinkedHashMap<>();
+        for (Libro libro:repo.librosActivos()) libros.put(libro.id(),libro);
+        return libros;
+    }
+    @Transactional(readOnly=true)
+    public InformeCatalogoVisitor.Resumen resumenCatalogo() {
+        var fichas=fichasActivas();
+        // El informe cuenta formatos cuyo archivo existe, no solo registros SQL.
+        var disponibles=repo.archivosCatalogo().stream().filter(a -> {
+            Path ruta=storage.resolve(a.claveArchivo()).normalize();
+            return ruta.startsWith(storage) && Files.isRegularFile(ruta) && Files.isReadable(ruta);
+        }).toList();
+        return new InformeCatalogoVisitor(fichas,disponibles).analizar(construirArbol(fichas));
+    }
+    private List<ColeccionNodo> construirArbol(Map<Long,Libro> libros) {
         Map<Long,ColeccionNodo> nodos=new HashMap<>();
         List<Coleccion> todas=repo.colecciones();
         for (Coleccion c:todas) nodos.put(c.id(),new ColeccionNodo(c.id(),c.nombre()));
@@ -201,10 +223,12 @@ public class CatalogoService {
             ColeccionNodo nodo=nodos.get(c.id());
             if (c.padreId()==null) raices.add(nodo);
             else nodos.get(c.padreId()).agregar(nodo);
-            for (long bookId:repo.idsLibrosColeccion(c.id())) {
-                try { Libro b=repo.libro(bookId); nodo.agregar(new LibroHoja(b.id(),b.titulo())); }
-                catch (IllegalArgumentException ignored) { /* El libro retirado no aparece en el arbol. */ }
-            }
+        }
+        // Consultas por lote: evita una consulta SQL por libro o por coleccion.
+        for (var asignacion:repo.asignaciones()) {
+            Libro libro=libros.get(asignacion.libroId());
+            ColeccionNodo nodo=nodos.get(asignacion.coleccionId());
+            if (libro!=null && nodo!=null) nodo.agregar(new LibroHoja(libro.id(),libro.titulo()));
         }
         return raices;
     }

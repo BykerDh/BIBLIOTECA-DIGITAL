@@ -13,11 +13,15 @@ public class RecomendacionService {
     public RecomendacionService(BibliotecaRepository repo,SuscripcionService suscripciones) {
         this.repo=repo; this.suscripciones=suscripciones;
     }
+    @Transactional
     public List<Libro> paraUsuario(long userId) {
+        repo.bloquearUsuario(userId);
         String genero=repo.preferencia(userId).or(() -> repo.generoMejorValorado(userId))
                 .or(() -> repo.generoFavorito(userId)).orElse("");
         String busqueda=repo.ultimaBusqueda(userId).orElse("");
-        return repo.recomendar(userId,genero,busqueda,suscripciones.planVigente(userId).catalogoCompleto());
+        var libros=repo.recomendar(userId,genero,busqueda,suscripciones.planVigente(userId).catalogoCompleto());
+        repo.guardarRecomendaciones(userId,libros);
+        return libros;
     }
     @Transactional
     public void preferir(long userId,String genero) {

@@ -60,6 +60,11 @@ public class AdministracionController {
         model.addAttribute("colecciones",catalogo.colecciones());
         return "admin-colecciones";
     }
+    @GetMapping("/catalogo/resumen")
+    public String resumen(Model model) {
+        model.addAttribute("resumen",catalogo.resumenCatalogo());
+        return "admin-resumen";
+    }
     @PostMapping("/colecciones")
     public String crearColeccion(@RequestParam String nombre,@RequestParam(required=false) Long padreId) {
         catalogo.crearColeccion(nombre,padreId);

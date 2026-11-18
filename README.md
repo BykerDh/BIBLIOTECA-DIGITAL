@@ -1,63 +1,100 @@
-# Biblioteca Digital
+# Biblioteca UTS
 
-Aplicacion Spring MVC para catalogo, entrega de PDF/EPUB/MOBI, prestamos, reservas, recomendaciones y suscripciones.
+Biblioteca digital desarrollada con Spring MVC, Java 25, Thymeleaf y MariaDB. Permite gestionar el catálogo, préstamos, reservas, recomendaciones y suscripciones, con lectura en la web y descarga de PDF, EPUB y MOBI.
 
-## Organizacion
+La interfaz comparte una identidad visual en verde bosque y marfil, portadas tipográficas y navegación adaptada a computador y celular. El lector EPUB/MOBI permite ajustar el texto y elegir fondo claro, sepia o noche.
 
-- `src/main/java/com/biblioteca`: codigo de la aplicacion.
+## Ejecutar con XAMPP y Visual Studio Code
+
+Se requieren JDK 25 y XAMPP instalado en `C:\xampp`. El proyecto incluye Maven Wrapper.
+
+1. Inicia Apache y MariaDB desde XAMPP.
+2. Abre esta carpeta en VS Code y ejecuta en su terminal PowerShell:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\run-local.ps1
+```
+
+3. Abre `http://localhost:8080`. La base se administra en `http://localhost/phpmyadmin`.
+4. La primera ejecución configura `biblioteca_digital`, una cuenta SQL exclusiva de la aplicación y el archivo local `.local.env.ps1`. Flyway crea o actualiza las tablas.
+5. Las credenciales iniciales del administrador están en `.local.env.ps1`. Este archivo es privado y está excluido de Git.
+
+Si MariaDB ya tiene la cuenta `biblioteca_proyecto_app`, el instalador se detiene para protegerla. En ese caso, configura las variables `DB_URL`, `DB_USER`, `DB_PASSWORD`, `LIBRARY_ADMIN_EMAIL` y `LIBRARY_ADMIN_PASSWORD` para tu instalación.
+
+Para detener la aplicación usa `Ctrl+C` en la terminal donde la ejecutaste. Si el puerto 8080 está ocupado, comprueba primero si la biblioteca ya está abierta; evita ejecutar dos copias en el mismo puerto.
+
+## Pantallas y funciones
+
+- **Inicio y catálogo:** búsqueda por título, autor o género; filtro de libros con los tres formatos.
+- **Ficha del libro:** préstamo, reserva, valoración, lectura en la web y descarga de cada formato disponible. La lectura exige un préstamo vigente y un plan compatible.
+- **Colecciones:** navegación por temas, subcolecciones y sus libros sin duplicados.
+- **Para ti:** recomendaciones basadas en lecturas, valoraciones y género preferido.
+- **Mi cuenta:** préstamos, devoluciones, reservas, avisos y fechas de inicio y terminación de la suscripción.
+- **Planes:** selección y renovación del plan según sus límites y beneficios.
+- **Administración:** cinco pestañas para libros, préstamos, reservas, recomendaciones y suscripciones. Cada una permite buscar y descargar un reporte Excel con todos los resultados filtrados.
+- **Gestión del catálogo:** creación y edición de fichas, carga de archivos, clonación, historial de cambios, organización de colecciones y resumen de disponibilidad.
+
+Las recomendaciones del reporte administrativo corresponden al último resultado generado para cada usuario al visitar Inicio o Para ti.
+
+## Organización
+
+- `src/main/java/com/biblioteca`: código de la aplicación.
 - `patterns/creational`: Singleton, Factory Method, Abstract Factory, Prototype y Builder.
 - `patterns/structural`: Adapter, Bridge, Composite, Decorator, Facade, Flyweight y Proxy.
-- `patterns/behavioral`: Iterator, Mediator y Memento.
-- `src/main/resources/templates` y `static`: pantallas y estilos.
-- `src/main/resources/db/migration`: esquema de MariaDB versionado con Flyway.
-- `src/test`: pruebas automatizadas. No son codigo sobrante.
-- `scripts`: configuracion, cambio de clave, importacion y comprobacion local.
-- `catalogo`: manifiesto y procedencia de los 100 libros.
-- `storage`: archivos reales de los libros; `storage/importacion` conserva los originales usados por el importador. No se debe borrar al limpiar el proyecto.
-- `Documentacion`: entregas y material academico.
-- `target`: resultado regenerable de Maven, excluido de Git.
+- `patterns/behavioral`: Iterator, Mediator, Memento, Observer, State y Visitor.
+- `src/main/resources/templates` y `static`: pantallas, estilos, iconos y lector.
+- `src/main/resources/static/vendor/foliate`: lector EPUB/MOBI y sus licencias; funciona con recursos locales.
+- `src/main/resources/db/migration`: migraciones de MariaDB con Flyway.
+- `src/test`: pruebas automatizadas de patrones, reglas, seguridad e integración.
+- `scripts`: configuración, cambio de clave, importación y preparación de formatos.
+- `catalogo`: manifiestos de procedencia y huellas SHA-256 de los libros.
+- `storage`: archivos reales de los libros; queda fuera de Git. No debe borrarse al limpiar el proyecto.
+- `Documentacion`: entregas académicas y material del proyecto.
+- `target`: compilación regenerable, excluida de Git.
 
-Las tres carpetas de patrones estan dentro de `src/main/java/com/biblioteca/patterns`.
+Las tres carpetas de patrones están dentro de `src/main/java/com/biblioteca/patterns`.
 
-## Inicio local con XAMPP
+## Preparar el catálogo en otra instalación
 
-1. Inicia Apache y MariaDB en el panel de XAMPP.
-2. Abre PowerShell en esta carpeta y ejecuta `./run-local.ps1`.
-3. Abre `http://localhost:8080` y phpMyAdmin en `http://localhost/phpmyadmin`.
-4. La primera ejecucion crea la base `biblioteca_digital`, una cuenta SQL exclusiva de la aplicacion y `.local.env.ps1`. Las migraciones crean las tablas al arrancar.
-5. Las credenciales del administrador de la biblioteca estan en `.local.env.ps1`. Ese archivo no se incluye en Git.
+Los binarios de libros no se incluyen en Git. El catálogo se puede reconstruir mediante los scripts incluidos, después de configurar XAMPP y la conexión local.
 
-Se requiere JDK 25 y XAMPP en `C:\xampp`. Si MariaDB ya usa la cuenta `biblioteca_proyecto_app`, el instalador se detiene para protegerla. Configura entonces `DB_URL`, `DB_USER`, `DB_PASSWORD`, `LIBRARY_ADMIN_EMAIL` y `LIBRARY_ADMIN_PASSWORD` manualmente.
-
-## Configuracion de despliegue
-
-La aplicacion lee `DB_URL`, `DB_USER`, `DB_PASSWORD`, `BOOK_STORAGE_PATH` y las credenciales iniciales de administrador desde variables de entorno. Configura un directorio persistente compartido para `BOOK_STORAGE_PATH` si vas a ejecutar varias instancias. Usa HTTPS y una base MariaDB administrada; no publiques phpMyAdmin directamente en Internet. Las sesiones web se guardan en MariaDB y pueden compartirse entre instancias. El estado se consulta en `/actuator/health`.
-
-Las tablas se versionan en `src/main/resources/db/migration`. Los archivos de libros se guardan en `storage/` fuera de Git. El patron Prototype copia solo metadatos y requiere subir archivos nuevos. El administrador puede cargar archivos con licencia de uso.
-
-## Catalogo de 100 libros
-
-`catalogo/libros-publicos.json` registra 100 obras reales en espanol, su fuente Project Gutenberg y la huella SHA-256 del EPUB. Para descargarlas e importarlas sin duplicados, despues de configurar XAMPP:
+`catalogo/libros-publicos.json` registra 100 obras reales en español y sus EPUB de Project Gutenberg. Para descargarlas e importarlas sin duplicados:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\importar-catalogo-publico.ps1
 ```
 
-La carga conserva los registros existentes y agrega la procedencia en `fuentes_libro`. Las ediciones conservan su licencia original. Gutenberg las clasifica como dominio publico en Estados Unidos; revisa las condiciones de tu pais antes de redistribuirlas. Los EPUB se descargan para abrirse en un lector compatible; los PDF pueden abrirse en el navegador.
+Para disponer de los mismos primeros 20 libros también en PDF y MOBI, instala Calibre y ajusta la ruta de `ebook-convert.exe` a tu instalación:
 
-Las entregas academicas se conservan en `Documentacion`, organizadas por corte.
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\preparar-formatos.ps1 -EbookConvert "C:\Program Files\Calibre2\ebook-convert.exe"
+. .\.local.env.ps1
+.\mvnw.cmd -B package
+java -jar .\target\BibliotecaProyecto-1.0.0.jar --spring.profiles.active=importar-formatos --server.port=0
+```
 
-## Patrones de comportamiento
+El script convierte las ediciones EPUB verificadas, guarda los archivos en `storage/multiformato` y actualiza `catalogo/formatos-adicionales.json`. El perfil registra sus formatos y termina al completar la importación. Mantén los archivos en almacenamiento persistente. Detén cualquier ejecución que use el JAR de `target` antes de volver a empaquetarlo.
 
-- Iterator: abrir Colecciones y pulsar una coleccion para listar sus libros y los de sus subcolecciones sin duplicados.
-- Mediator: al devolver un libro o cancelar una reserva, coordina el aviso al primer usuario en espera si hay cupo.
-- Memento: en Editar libro, Historial de la ficha permite deshacer hasta diez cambios descriptivos. No revierte archivos, ISBN, licencias ni prestamos.
+Las ediciones conservan su licencia y procedencia. Project Gutenberg las clasifica como dominio público en Estados Unidos; consulta las condiciones aplicables en tu país antes de redistribuirlas.
+
+## Patrones de comportamiento en funcionamiento
+
+- **Iterator:** recorre una colección y sus subcolecciones para mostrar libros paginados sin duplicados.
+- **Mediator:** coordina el aviso al primer usuario en espera cuando una devolución o cancelación deja cupo.
+- **Memento:** permite deshacer hasta diez cambios descriptivos de una ficha. No revierte archivos, ISBN, licencias ni préstamos.
+- **Observer:** comunica los eventos de circulación a los componentes de notificación y auditoría.
+- **State:** representa préstamos vigentes, vencidos y devueltos y sus operaciones permitidas.
+- **Visitor:** genera el resumen del catálogo, sus formatos y los libros sin archivo disponible.
 
 ## Pruebas
 
-`./mvnw.cmd test` ejecuta las pruebas de patrones y reglas de circulacion. La meta de mas de 100.000 usuarios es una meta de capacidad: requiere infraestructura y pruebas de carga antes de afirmarse como rendimiento alcanzado.
+Para ejecutar las pruebas habituales:
 
-Para incluir las pruebas con MariaDB real, iniciar MySQL en XAMPP y ejecutar:
+```powershell
+.\mvnw.cmd test
+```
+
+Para incluir la integración con MariaDB real, inicia MariaDB en XAMPP:
 
 ```powershell
 . .\.local.env.ps1
@@ -66,6 +103,10 @@ $env:BIBLIOTECA_DB_TEST='true'
 Remove-Item Env:BIBLIOTECA_DB_TEST
 ```
 
-Los datos creados por esas pruebas se revierten al terminar cada caso; las migraciones del esquema permanecen aplicadas.
+Las pruebas aíslan sus datos temporales; las migraciones del esquema permanecen aplicadas. Antes de ejecutar `clean package`, detén la aplicación. No elimines `storage`, `.local.env.ps1`, las migraciones ni `.mvn`.
 
-Para regenerar los archivos de compilacion, detener primero la aplicacion y ejecutar `./mvnw.cmd clean package`. No borrar `storage`, `.local.env.ps1`, las migraciones ni `.mvn`. No publicar contrasenas en Git.
+## Configuración de despliegue
+
+La aplicación lee la conexión, `BOOK_STORAGE_PATH`, `PORT` y las credenciales iniciales desde variables de entorno. Usa almacenamiento persistente compartido si ejecutas varias instancias. Las sesiones se guardan en MariaDB y el estado se consulta en `/actuator/health`.
+
+El objetivo de más de 100.000 usuarios sigue siendo una meta de capacidad: requiere dimensionar infraestructura y realizar pruebas de carga representativas antes de afirmarlo como rendimiento alcanzado. Para un despliegue público, configura HTTPS y protege el acceso administrativo a MariaDB/phpMyAdmin.

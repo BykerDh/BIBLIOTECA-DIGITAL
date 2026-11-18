@@ -19,7 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 // Opt-in: usa MariaDB real y revierte cada prueba; no reemplaza los datos del usuario.
-@SpringBootTest
+@SpringBootTest(properties="app.vencimientos.habilitados=false")
 @Transactional
 @EnabledIfEnvironmentVariable(named="BIBLIOTECA_DB_TEST", matches="true")
 class ComportamientoMariaDbTest {
